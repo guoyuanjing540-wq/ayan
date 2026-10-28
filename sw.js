@@ -1,5 +1,5 @@
 // 改了页面就把版本号加 1，手机上才会换新的
-const CACHE = 'ayan-v4';
+const CACHE = 'ayan-v5';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon.svg', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {

@@ -868,6 +868,24 @@ $('#bakFile').onchange = async e => {
   } catch { toast('这不是阿衍的备份文件'); }
 };
 
+// ---------- 从链接导入人格包：#pack=<deflate-raw + base64url> ----------
+// # 后面的部分浏览器不会发给服务器，读完就从地址栏抹掉
+async function importFromHash() {
+  const m = location.hash.match(/^#pack=([A-Za-z0-9_-]+)/);
+  if (!m) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  try {
+    const b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
+    const bin = Uint8Array.from(atob(b64 + '==='.slice((b64.length + 3) % 4)), c => c.charCodeAt(0));
+    const txt = await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+    const p = parsePack(txt);
+    if ((S.persona.trim() || S.card.trim()) && S.persona !== p.persona && !confirm('链接里带了人格包，要覆盖现在的人设和记忆卡吗？')) return;
+    S.persona = p.persona; if (p.card) S.card = p.card;
+    save('persona', 'card'); render();
+    toast(S.key ? '人格包导进来了' : '人格包导进来了，再去设置里填 Key');
+  } catch { toast('链接里的人格包读不出来，去设置里手动导入'); }
+}
+
 // ---------- 河面上的碎光 ----------
 (function () {
   const river = document.querySelector('.river'), top0 = 74;
@@ -887,7 +905,8 @@ $('#bakFile').onchange = async e => {
 // ---------- 启动 ----------
 if (!curConv()) S.cur = S.convs[0] ? S.convs[0].id : null;
 syncLayout(); renderConvs(); renderTools(); render(); scrollEnd(true); loadBalance();
-if (!S.key) setTimeout(() => toast(isWide() ? '先点左下角「设置」，填 Key、导入人格包' : '先点左上角 → 设置，填 Key、导入人格包'), 600);
+importFromHash();
+if (!S.key && !location.hash.startsWith('#pack=')) setTimeout(() => toast(isWide() ? '先点左下角「设置」，填 Key、导入人格包' : '先点左上角 → 设置，填 Key、导入人格包'), 600);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
