@@ -110,7 +110,7 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:8px 16px 16px;-w
 .bubble.err{color:var(--danger);border-color:rgba(231,154,154,.25)}
 .bubble img.att{display:block;max-width:220px;max-height:260px;border-radius:12px;margin:2px 0 6px;cursor:zoom-in}
 .think{margin:0 0 6px;font-size:13px;color:var(--muted)}
-.think summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;background:var(--press);user-select:none}
+.think summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;background:var(--press);-webkit-user-select:none;user-select:none}
 .think summary::-webkit-details-marker{display:none}
 .think div{white-space:pre-wrap;margin-top:6px;padding-left:10px;border-left:2px solid var(--line2);max-height:320px;overflow-y:auto}
 .srcs{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
@@ -529,11 +529,13 @@ function updateSend() { $('#send').disabled = !busy && !$('#input').value.trim()
 function friendlyError(status, body) {
   const code = (body && body.error && body.error.code) || '';
   const msg = (body && body.error && body.error.message) || '';
+  if (code === '1309' || /套餐已到期/.test(msg)) return '这个 Key 绑的智谱套餐到期了（连免费模型也用不了）。去 open.bigmodel.cn 新建一个普通 API Key，或者续订套餐。';
   if (status === 401 || code === '1000' || code === '1001' || code === '1002') return 'Key 不对或者过期了，去设置里换一个。';
   if (code === '1113' || /余额|欠费|balance/i.test(msg)) return '这个模型要钱，账户里没余额了。设置里换回免费的。';
   if (code === '1211' || /模型不存在|model/i.test(msg) && status === 400) return '这个模型名智谱不认，去设置里换一个试试。';
-  if (status === 429 || code === '1302' || code === '1303' || code === '1305') return '智谱那边限流了，等一分钟再发。';
+  if (code === '1302' || code === '1303' || code === '1305') return '智谱那边限流了，等一分钟再发。';
   if (code === '1301' || /敏感|安全|sensitive/i.test(msg)) return '这句被智谱的审核拦了，换个说法。';
+  if (status === 429 && !msg) return '智谱那边限流了，等一分钟再发。';
   return `出错了（${status}${code ? ' / ' + code : ''}）${msg ? '：' + msg : ''}`;
 }
 
