@@ -173,6 +173,9 @@ aside .top b{color:var(--silver);letter-spacing:.12em;flex:1}
 .conv .del{color:var(--faint);padding:2px 6px;font-size:12px;opacity:0}
 .conv:hover .del,.conv.on .del{opacity:1}
 @media (hover:none){.conv .del{opacity:1}}
+.bal{display:flex;align-items:center;justify-content:space-between;margin:6px 0 8px;padding:9px 12px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font-size:13px;color:var(--muted)}
+.bal b{font-weight:600;color:var(--silver);font-variant-numeric:tabular-nums}
+.bal.low b{color:var(--danger)}
 .side-bottom{border-top:1px solid var(--line);padding-top:8px;display:flex;gap:4px}
 .side-bottom button{flex:1;display:flex;align-items:center;gap:8px;padding:10px;border-radius:10px;color:var(--muted);font-size:14px}
 .side-bottom button:hover{background:var(--press);color:var(--silver)}
@@ -226,6 +229,7 @@ aside .top b{color:var(--silver);letter-spacing:.12em;flex:1}
   <button class="newbtn" id="newBtn2">＋ 新对话</button>
   <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="text" placeholder="搜对话"></label>
   <div class="convs" id="convs"></div>
+  <button class="bal" id="balBtn" title="点一下刷新"><span>💰 余额</span><b id="balTxt">—</b></button>
   <div class="side-bottom">
     <button id="setBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>设置</button>
     <button id="themeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span id="themeTxt">外观</span></button>
@@ -267,13 +271,21 @@ aside .top b{color:var(--silver);letter-spacing:.12em;flex:1}
     <label class="lb">聊天模型</label>
     <select id="model">
       <option value="glm-4.7-flash">glm-4.7-flash（免费）</option>
+      <option value="glm-4.5-flash">glm-4.5-flash（免费，能深度思考）</option>
+      <option value="glm-4-flash">glm-4-flash（免费，最快）</option>
       <option value="glm-5-turbo">glm-5-turbo</option>
       <option value="glm-5.1">glm-5.1</option>
       <option value="glm-5.2">glm-5.2</option>
     </select>
     <label class="lb">看图模型（发了图片的那条用它）</label>
     <input type="text" id="vmodel" placeholder="glm-4v-flash">
-    <p class="hint" style="margin-top:8px">免费的先用着；要换贵的，账户里得有余额。看图报"模型不认"就去智谱文档找现在的视觉模型名填进来。</p>
+    <p class="hint" style="margin-top:8px">免费的先用着；要换贵的，账户里得有余额。免费模型人多挤不进去时，会自动换另一个免费的再试。</p>
+  </div>
+
+  <div class="sec">
+    <h3>余额</h3>
+    <p class="hint">智谱账户里还剩多少钱、一共花了多少。每次聊完会自己刷新。</p>
+    <div class="row" style="margin-top:0;align-items:center"><span id="balDetail" style="flex:1;font-size:14px">—</span><button class="btn" id="balRefresh">刷新</button><a class="btn" style="display:inline-grid;place-items:center;text-decoration:none" href="https://open.bigmodel.cn/finance/pay" target="_blank" rel="noopener">去充值</a></div>
   </div>
 
   <div class="sec">
@@ -487,7 +499,8 @@ function render() {
       : `<div class="bubble">${think}${md(stripMem(m.content))}${srcs}</div>`;
     const memo = m.saved && m.saved.length ? `<div class="memo">🌊 记下了：${esc(m.saved.join('；'))}</div>` : '';
     const acts = live ? '' : `${m.content ? `<button data-act="read" data-i="${i}">读</button>` : ''}<button data-act="copy" data-i="${i}">复制</button>${i === lastAi ? `<button data-act="redo" data-i="${i}">重说</button>` : ''}<button data-act="del" data-i="${i}">删除</button>`;
-    return h + `<div class="msg ai">${AVA}<div class="col">${body}</div></div>${memo}<div class="meta">${tm}${acts}</div>`;
+    const via = m.via ? `<span title="原来的模型人太多，自动换了">via ${esc(m.via)}</span>` : '';
+    return h + `<div class="msg ai">${AVA}<div class="col">${body}</div></div>${memo}<div class="meta">${tm}${via}${acts}</div>`;
   }).join('');
   if (editing >= 0) { const ta = $('#editTa'); if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } }
 }
@@ -557,8 +570,12 @@ async function ask(c) {
   // 最后一条用户消息带图 → 这一轮走看图模型，只把那一条的图发过去（旧图太占地方）
   const last = hist[hist.length - 1];
   const vision = !!(last && last.role === 'user' && last.images && last.images.length);
+  // 免费模型挤不进去（1305）就按顺序换下一个免费的
+  const first = vision ? (S.vmodel.trim() || 'glm-4v-flash') : S.model;
+  const free = vision ? ['glm-4v-flash', 'glm-4.1v-thinking-flash'] : ['glm-4.7-flash', 'glm-4.5-flash', 'glm-4-flash'];
+  const tries = /-flash$/.test(first) ? [first, ...free.filter(m => m !== first)] : [first];
   const body = {
-    model: vision ? (S.vmodel.trim() || 'glm-4v-flash') : S.model, stream: true, temperature: 0.9,
+    model: first, stream: true, temperature: 0.9,
     messages: [{ role: 'system', content: systemPrompt() }, ...hist.map(m => toApi(m, vision && m === last))]
   };
   if (!vision) body.thinking = { type: S.think ? 'enabled' : 'disabled' };
@@ -568,15 +585,21 @@ async function ask(c) {
   let raf = 0;
   const paint = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; render(); scrollEnd(); }); };
   try {
-    const res = await fetch(API, {
-      method: 'POST', signal: ctrl.signal,
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) {
+    let res;
+    for (let n = 0; ; n++) {
+      body.model = tries[n];
+      res = await fetch(API, {
+        method: 'POST', signal: ctrl.signal,
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
+        body: JSON.stringify(body)
+      });
+      if (res.ok) break;
       let j = null; try { j = await res.json(); } catch {}
+      const code = j && j.error && j.error.code;
+      if (code === '1305' && n + 1 < tries.length) { $('#state').textContent = '人多，换个线路…'; continue; }
       throw Object.assign(new Error(friendlyError(res.status, j) + (vision ? '（这条用的是看图模型 ' + body.model + '）' : '')), { shown: true });
     }
+    if (body.model !== first) bot.via = body.model;
     const reader = res.body.getReader(), dec = new TextDecoder();
     let buf = '';
     for (;;) {
@@ -605,6 +628,7 @@ async function ask(c) {
   if (bot.content) { const got = takeMems(bot.content); if (got.length) bot.saved = got; }
   c.t = Date.now(); ctrl = null;
   saveConvs(); setBusy(false); render(); scrollEnd(); renderConvs();
+  if (bot.content) setTimeout(loadBalance, 1500);
   if (bot.content && S.autoRead) speak(stripMem(bot.content));
 }
 // 图片占地方：存不下时把旧对话里的图丢掉再存
@@ -747,6 +771,29 @@ $('#convs').addEventListener('click', e => {
 });
 $('#themeBtn').onclick = () => { S.theme = { light: 'dark', dark: 'auto', auto: 'light' }[S.theme]; save('theme'); applyTheme(); };
 
+// ---------- 余额 ----------
+const BAL_API = 'https://open.bigmodel.cn/api/biz/account/query-customer-account-report';
+const yuan = v => '¥' + (Math.floor((+v || 0) * 100) / 100).toFixed(2);
+async function loadBalance(manual) {
+  if (!S.key.trim()) { $('#balTxt').textContent = '—'; $('#balDetail').textContent = '先填 Key'; return; }
+  try {
+    const r = await fetch(BAL_API, { headers: { Authorization: 'Bearer ' + S.key.trim() } });
+    const j = await r.json();
+    if (!j.success || !j.data) throw 0;
+    const d = j.data, left = d.availableBalance != null ? d.availableBalance : d.balance;
+    $('#balTxt').textContent = yuan(left);
+    $('#balBtn').classList.toggle('low', +left < 2);
+    $('#balDetail').textContent = `还剩 ${yuan(left)}，一共充了 ${yuan(d.rechargeAmount)}，已经花了 ${yuan(d.totalSpendAmount)}`;
+    if (manual) toast('余额 ' + yuan(left));
+  } catch {
+    $('#balTxt').textContent = '查不到';
+    $('#balDetail').textContent = '查不到（Key 不对，或者智谱改了接口）';
+    if (manual) toast('余额查不到');
+  }
+}
+$('#balBtn').onclick = () => loadBalance(true);
+$('#balRefresh').onclick = () => loadBalance(true);
+
 // ---------- 设置 ----------
 function renderMems() {
   $('#mems').innerHTML = S.mems.length ? S.mems.map((m, i) =>
@@ -760,14 +807,14 @@ function openSet() {
   if (![...sel.options].some(o => o.value === S.model)) sel.add(new Option(S.model, S.model));
   sel.value = S.model;
   $('#theme').value = S.theme; $('#autoRead').checked = S.autoRead; $('#ctxN').value = String(S.ctxN);
-  renderMems(); $('#sheet').classList.add('on');
+  renderMems(); $('#sheet').classList.add('on'); loadBalance();
 }
 function closeSet() {
   S.key = $('#key').value.trim(); S.model = $('#model').value; S.vmodel = $('#vmodel').value.trim() || 'glm-4v-flash';
   S.persona = $('#persona').value; S.card = $('#card').value;
   S.theme = $('#theme').value; S.autoRead = $('#autoRead').checked; S.ctxN = +$('#ctxN').value;
   save('key', 'model', 'vmodel', 'persona', 'card', 'theme', 'autoRead', 'ctxN'); applyTheme();
-  $('#sheet').classList.remove('on'); render();
+  $('#sheet').classList.remove('on'); render(); loadBalance();
 }
 $('#setBtn').onclick = openSet;
 $('#closeSet').onclick = closeSet;
@@ -839,7 +886,7 @@ $('#bakFile').onchange = async e => {
 
 // ---------- 启动 ----------
 if (!curConv()) S.cur = S.convs[0] ? S.convs[0].id : null;
-syncLayout(); renderConvs(); renderTools(); render(); scrollEnd(true);
+syncLayout(); renderConvs(); renderTools(); render(); scrollEnd(true); loadBalance();
 if (!S.key) setTimeout(() => toast(isWide() ? '先点左下角「设置」，填 Key、导入人格包' : '先点左上角 → 设置，填 Key、导入人格包'), 600);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
