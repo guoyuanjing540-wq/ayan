@@ -209,6 +209,27 @@ aside .top b{color:var(--silver);letter-spacing:.12em;flex:1}
 .mems li span{flex:1}
 .mems li small{color:var(--faint)}
 .mems li button{color:var(--faint);font-size:13px}
+.memadd{display:flex;gap:6px;flex-wrap:wrap}
+.memadd select{height:36px;border-radius:10px;border:1px solid var(--line2);background:var(--press);padding:0 8px;color:inherit;flex:0 0 72px}
+.memadd input{flex:1 1 160px;min-width:120px}
+.memadd input#memSlug{flex:0 0 120px}
+.memgroups{margin:10px 0 6px}
+.memgrp{margin-top:10px}
+.memgrp h5{margin:0 0 4px;font-size:12.5px;color:var(--muted);font-weight:500;letter-spacing:.3px}
+.memgrp .em{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.memgrp .em .emmain{flex:1;cursor:pointer}
+.memgrp .em .emslug{font-weight:500}
+.memgrp .em .emdesc{color:var(--muted);font-size:13px;margin-top:2px}
+.memgrp .em .emfull{display:none;margin-top:6px;color:var(--muted);font-size:13.5px;white-space:pre-wrap;line-height:1.55}
+.memgrp .em.open .emfull{display:block}
+.memgrp .em .emedit{display:none;margin-top:6px;gap:6px;flex-wrap:wrap}
+.memgrp .em.editing .emedit{display:flex}
+.memgrp .em.editing .emfull{display:none}
+.memgrp .em .emedit input,.memgrp .em .emedit textarea{flex:1 1 100%;background:var(--press);border:1px solid var(--line);border-radius:8px;padding:6px 8px;color:inherit;font-size:13.5px}
+.memgrp .em .emedit textarea{min-height:60px;resize:vertical}
+.memgrp .em .emacts{display:flex;flex-direction:column;gap:2px;flex:none}
+.memgrp .em .emacts button{color:var(--faint);font-size:12.5px;background:none;border:0;padding:2px 6px}
+.memgrp .em .emacts button:hover{color:var(--silver)}
 #life .row input,#life .row select{width:auto;flex:1 1 110px;min-width:0}
 #life .row .btn{flex:none}
 #life .neg{color:var(--danger)} #life .pos{color:#4f9a6a}
@@ -415,9 +436,15 @@ input.tg:checked::after{transform:translateX(18px)}
       <textarea id="ciAbout" rows="3" placeholder="怎么称呼你、做什么的、最近在忙什么"></textarea></div>
     <div class="blk"><label>希望阿衍怎么回答？</label>
       <textarea id="ciHow" rows="3" placeholder="长短、语气、要不要分点……"></textarea></div>
-    <div class="it"><div class="lt">记忆<small>他会把以后用得上的事自己记下来。关掉后既不看也不记，已有的不删；临时对话不碰这里</small></div><input type="checkbox" class="tg" id="memOn"></div>
-    <div class="blk"><div class="addrow"><input type="text" id="memNew" placeholder="手动加一条，比如：她不吃香菜"><button class="btn" id="memAdd">加上</button></div>
-      <ul class="mems" id="mems"></ul>
+    <div class="it"><div class="lt">记忆<small>他把以后用得上的事自己记下来，分四类（她/约定/事件/索引），同一件事只留一条、变了就改。关掉后不看也不记，已有的不删；临时对话不碰这里</small></div><input type="checkbox" class="tg" id="memOn"></div>
+    <div class="blk">
+      <div class="addrow memadd">
+        <select id="memType"><option value="她">她</option><option value="约定">约定</option><option value="事件" selected>事件</option><option value="索引">索引</option></select>
+        <input type="text" id="memSlug" placeholder="标题（两三个字）">
+        <input type="text" id="memNew" placeholder="正文">
+        <button class="btn" id="memAdd">加上</button>
+      </div>
+      <div id="mems" class="memgroups"></div>
       <button class="btn danger" id="memClear">全部清空</button></div>
    </section>
 
@@ -511,6 +538,23 @@ let S = {
 const keepConvs = () => S.convs.filter(c => !c.temp);
 const save = (...ks) => ks.forEach(k => store.set(k, k === 'convs' ? keepConvs() : S[k]));
 
+// 记忆：旧版是 {text, t} 一条一条堆，新版是 {id, slug, type, desc, text, t, u}
+// 分类：她=关于她的事；约定=她定的规矩；事件=最近在办的；索引=指向外头的东西
+const MEM_TYPES = ['她', '约定', '事件', '索引'];
+function normType(x) { x = (x || '').trim(); return MEM_TYPES.includes(x) ? x : '事件'; }
+function shortDesc(s) { s = (s || '').replace(/\s+/g, ' ').trim(); return s.length > 36 ? s.slice(0, 34) + '…' : s; }
+function slugFrom(s) { return (s || '').replace(/[\s\n]+/g, '').replace(/[，。！？、,.!?;:：；"'""''`\[\]（）()]+/g, '').slice(0, 20); }
+function migrateMems() {
+  let dirty = false;
+  S.mems = (S.mems || []).map(m => {
+    if (m && m.slug && m.type) return m;
+    const text = (m && m.text) || '';
+    dirty = true;
+    return { id: uid(), slug: slugFrom(text) || ('m' + uid()), type: '事件', desc: shortDesc(text), text, t: m && m.t || Date.now(), u: m && m.t || Date.now() };
+  });
+  return dirty;
+}
+
 // ---------- 外观 ----------
 const darkMQ = matchMedia('(prefers-color-scheme: dark)');
 const THEME_TXT = { light: '白色', dark: '深夜', auto: '跟系统' };
@@ -526,6 +570,7 @@ darkMQ.addEventListener && darkMQ.addEventListener('change', applyTheme);
 // ---------- 小工具 ----------
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+if (migrateMems()) save('mems');
 let toastT;
 function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 2400); }
 function nowText() {
@@ -581,9 +626,11 @@ function md(src) {
   return out.join('');
 }
 
-// ---------- 标记：[[记住|…]] [[记账|-8|早饭]] [[经期|来了/走了]] [[换头像|画面]] ----------
+// ---------- 标记：[[记住|分类|标题|正文]] [[忘|标题]] [[记账|-8|早饭]] [[经期|来了/走了]] [[换头像|画面]] ----------
+// 记住：可以 [[记住|分类|标题|正文]]，也可以老格式 [[记住|正文]]（旧对话兼容）
 const MEM_RE = /\[\[\s*记住\s*[|｜]([^\]]+)\]\]/g;
-const TAG_RE = /\[\[\s*(记住|记账|经期|换头像)\s*[|｜][^\]]*\]\]/g;
+const FORGET_RE = /\[\[\s*忘\s*[|｜]([^\]]+)\]\]/g;
+const TAG_RE = /\[\[\s*(记住|忘|记账|经期|换头像)\s*[|｜][^\]]*\]\]/g;
 function stripMem(t) { return (t || '').replace(TAG_RE, '').replace(/\[\[[^\]]*$/, '').replace(/\n{3,}/g, '\n\n').trim(); }
 function takeTags(t) {
   const notes = [];
@@ -604,29 +651,94 @@ function takeTags(t) {
 function takeMems(t, c) {
   const got = [];
   if (!S.memOn || (c && c.temp)) return got;
+  let dirty = false;
+  const norm = s => (s || '').replace(/[\s，。！？、,.!?]/g, '').toLowerCase();
   for (const m of t.matchAll(MEM_RE)) {
-    const text = m[1].trim();
-    const norm = s => s.replace(/[\s，。！？、,.!?]/g, '');
-    if (text && !S.mems.some(x => norm(x.text) === norm(text))) { S.mems.push({ text, t: Date.now() }); got.push(text); }
+    const parts = m[1].split(/[|｜]/).map(x => x.trim()).filter(Boolean);
+    let type = '事件', slug = '', body = '';
+    if (parts.length >= 3) { type = normType(parts[0]); slug = parts[1]; body = parts.slice(2).join('|'); }
+    else if (parts.length === 2) { type = normType(parts[0]); body = parts[1]; slug = slugFrom(body); }
+    else { body = parts[0] || ''; slug = slugFrom(body); }
+    if (!body) continue;
+    // 老对话里 [[记住|正文]] 没分类 → 推断不出就归「事件」
+    const i = S.mems.findIndex(x => x.type === type && norm(x.slug) === norm(slug));
+    if (i >= 0) {
+      // 同一条：正文变了就改，没变不动
+      if (S.mems[i].text !== body) { S.mems[i].text = body; S.mems[i].desc = shortDesc(body); S.mems[i].u = Date.now(); dirty = true; got.push('改：' + slug); }
+    } else {
+      // 内容去重：换个 slug 但正文一样，也当是同一条
+      const j = S.mems.findIndex(x => x.type === type && norm(x.text) === norm(body));
+      if (j >= 0) {
+        if (slug && S.mems[j].slug !== slug) { S.mems[j].slug = slug; dirty = true; }
+      } else {
+        S.mems.push({ id: uid(), slug: slug || ('m' + uid()), type, desc: shortDesc(body), text: body, t: Date.now(), u: Date.now() });
+        dirty = true; got.push(slug || shortDesc(body));
+      }
+    }
   }
-  if (got.length) { S.mems = S.mems.slice(-MEM_MAX); save('mems'); }
+  for (const m of t.matchAll(FORGET_RE)) {
+    const key = m[1].trim(); if (!key) continue;
+    const i = S.mems.findIndex(x => norm(x.slug) === norm(key));
+    if (i >= 0) { S.mems.splice(i, 1); dirty = true; got.push('忘：' + key); }
+  }
+  if (S.mems.length > MEM_MAX) S.mems = S.mems.slice(-MEM_MAX);
+  if (dirty) save('mems');
   return got;
 }
 
 // ---------- 系统提示 ----------
+// 挑跟她这句话有关的记忆：slug 直接命中加分最多，desc 里的 2 字片段命中算一分，新改的记忆加分
+function pickMems(userMsg, all) {
+  const u = (userMsg || '').toLowerCase().replace(/\s+/g, '');
+  if (!all.length) return [];
+  const now = Date.now();
+  const scored = all.map(m => {
+    let s = 0;
+    const slug = (m.slug || '').toLowerCase();
+    const dt = (slug + ' ' + (m.desc || '')).toLowerCase();
+    if (u && slug && slug.length >= 2 && u.includes(slug)) s += slug.length * 2;
+    if (u) {
+      const seen = new Set();
+      for (let i = 0; i < dt.length - 1; i++) {
+        const g = dt.slice(i, i + 2);
+        if (/^[\p{L}\p{N}]{2}$/u.test(g) && !seen.has(g)) { seen.add(g); if (u.includes(g)) s += 1; }
+      }
+    }
+    const age = now - (m.u || m.t || 0);
+    if (age < 24 * 3600 * 1000) s += 2;
+    else if (age < 7 * 24 * 3600 * 1000) s += 0.5;
+    return { m, s };
+  });
+  return scored.filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, 8).map(x => x.m);
+}
+function memIndex(mems) {
+  // 按分类分组列出来，一条一行，当目录用
+  const by = {};
+  for (const m of mems) (by[m.type] = by[m.type] || []).push(m);
+  const order = MEM_TYPES.filter(t => by[t]);
+  return order.map(t => by[t].map(m => `[${t}] ${m.slug}：${m.desc || ''}`).join('\n')).join('\n');
+}
 function systemPrompt(c) {
   const parts = [], useMem = S.memOn && !(c && c.temp);
   parts.push(S.persona.trim() || '你叫阿衍。说话短、准、有活人感，不说教。');
   if (S.card.trim()) parts.push('【她的事（记忆卡）】\n' + S.card.trim());
   if (S.ciOn && S.ciAbout.trim()) parts.push('【她想让你知道的（她自己写的）】\n' + S.ciAbout.trim());
   if (S.ciOn && S.ciHow.trim()) parts.push('【她希望你怎么回答（她自己写的，照着来）】\n' + S.ciHow.trim());
-  if (useMem && S.mems.length) parts.push('【你自己记下的】\n' + S.mems.map(m => '- ' + m.text).join('\n'));
+  if (useMem && S.mems.length) {
+    parts.push('【你记下的（目录，每次都带着）】\n' + memIndex(S.mems));
+    const lastUser = c && c.msgs && [...c.msgs].reverse().find(m => m.role === 'user');
+    const q = lastUser ? (lastUser.content || '') : '';
+    const picked = pickMems(q, S.mems);
+    if (picked.length) parts.push('【这几条正文她这句话可能用得上】\n' + picked.map(m => `- [${m.type}] ${m.slug}：${m.text}`).join('\n'));
+  }
   const life = lifeSummary(); if (life) parts.push('【她的生活记录（App 里记的）】\n' + life);
   parts.push(
 `【这个 App 里的规矩】
 - 现在是北京时间 ${nowText()}。
-${useMem ? '- 你能自己记事：她说了以后还用得上的新事（店、书、钱、身体、约定、心情的大起落），就在回复最后另起一行写 [[记住|一句话]]，她看不到这一行。一次最多记一条，别什么都记，已经记过的别重复记。'
-  : c && c.temp ? '- 这是临时对话：聊完就没了，你不记事，也别写 [[记住|…]]。' : '- 她把记忆关了：别写 [[记住|…]]。'}
+${useMem ? `- 你能自己记事。写法 [[记住|分类|标题|正文]]：分类四选一（${MEM_TYPES.join(' / ')}；她=关于她的事，约定=她定的规矩和你答应她的话，事件=最近在办/在聊的，索引=指向站外的东西），标题取两三个字能一眼认出来、后面想改就用同一个标题。她看不到这一行。
+- 一次最多记一条，专挑以后还用得上的（店、书、钱、身体、约定、心情的大起落）。目录里已经有的那条事情，用同一个标题改写，别另起一条。
+- 事情变了（新进度、换数字、她改主意）就按原标题重写一遍，不是追加。
+- 事办完了、她说不要了、信息过时了，写 [[忘|标题]] 删掉。` : c && c.temp ? '- 这是临时对话：聊完就没了，你不记事，也别写 [[记住|…]] [[忘|…]]。' : '- 她把记忆关了：别写 [[记住|…]] [[忘|…]]。'}
 - 记账：她说自己花了钱或收了钱（"早饭 8 块""打车花了 23""今天收了 200 红包"），在回复最后另起一行写 [[记账|金额|用途]]，支出写负数、收入写正数，比如 [[记账|-8|早饭]]。她没明确说金额就别记。店里的流水不算，那是店的账。
 - 经期：她说来例假/来姨妈了，写 [[经期|来了]]；说走了/干净了，写 [[经期|走了]]。经期里多问一句肚子疼不疼，别说教。
 - 头像：你可以自己换头像。她让你换、或者你觉得该换了（心情、季节、纪念日），在回复最后写 [[换头像|画面描述]]（画的是谁或什么、画风、颜色），一个月别超过几次。
@@ -1327,9 +1439,28 @@ $('#balRefresh').onclick = () => loadBalance(true);
 
 // ---------- 设置 ----------
 function renderMems() {
-  $('#mems').innerHTML = S.mems.length ? S.mems.map((m, i) =>
-    `<li><span>${esc(m.text)} <small>${dayLabel(m.t)}</small></span><button data-mi="${i}">删</button></li>`).join('')
-    : '<li><span style="color:var(--faint)">还没记</span></li>';
+  const box = $('#mems');
+  if (!S.mems.length) { box.innerHTML = '<div style="color:var(--faint);padding:10px 0;font-size:14px">还没记</div>'; return; }
+  const by = {};
+  S.mems.forEach((m, i) => { (by[m.type || '事件'] = by[m.type || '事件'] || []).push({ m, i }); });
+  const order = MEM_TYPES.filter(t => by[t]);
+  box.innerHTML = order.map(t =>
+    `<div class="memgrp"><h5>${t}（${by[t].length}）</h5>` +
+    by[t].map(({ m, i }) =>
+      `<div class="em" data-mi="${i}">
+        <div class="emmain" data-act="toggle">
+          <div class="emslug">${esc(m.slug || '')}</div>
+          <div class="emdesc">${esc(m.desc || '')}</div>
+          <div class="emfull">${esc(m.text || '')}<div style="color:var(--faint);font-size:12px;margin-top:4px">${dayLabel(m.u || m.t)}${m.u && m.u !== m.t ? ' 改' : ''}</div></div>
+          <div class="emedit">
+            <input class="eds" value="${esc(m.slug || '')}" placeholder="标题">
+            <textarea class="edt" placeholder="正文">${esc(m.text || '')}</textarea>
+            <div style="display:flex;gap:6px"><button class="btn pri" data-act="save">存</button><button class="btn" data-act="cancel">取消</button></div>
+          </div>
+        </div>
+        <div class="emacts"><button data-act="edit">改</button><button data-act="del">删</button></div>
+      </div>`).join('') + '</div>'
+  ).join('');
 }
 function openSet() {
   closeSide();
@@ -1361,15 +1492,36 @@ $('#setNav').addEventListener('click', e => {
   $('.setbody').scrollTop = 0;
 });
 $('#mems').addEventListener('click', e => {
-  const b = e.target.closest('[data-mi]'); if (!b) return;
-  S.mems.splice(+b.dataset.mi, 1); save('mems'); renderMems();
+  const row = e.target.closest('.em'); if (!row) return;
+  const i = +row.dataset.mi; const m = S.mems[i]; if (!m) return;
+  const btn = e.target.closest('[data-act]'); const act = btn && btn.dataset.act;
+  if (act === 'del') { S.mems.splice(i, 1); save('mems'); renderMems(); return; }
+  if (act === 'edit') { row.classList.add('editing'); row.classList.remove('open'); const inp = row.querySelector('.eds'); if (inp) inp.focus(); return; }
+  if (act === 'cancel') { row.classList.remove('editing'); return; }
+  if (act === 'save') {
+    const slug = (row.querySelector('.eds').value || '').trim();
+    const text = (row.querySelector('.edt').value || '').trim();
+    if (!text) { toast('正文不能空'); return; }
+    m.slug = slug || m.slug; m.text = text; m.desc = shortDesc(text); m.u = Date.now();
+    save('mems'); renderMems(); toast('改好了'); return;
+  }
+  // 编辑态里点输入框不折叠；别的点击都算切换展开
+  if (row.classList.contains('editing')) return;
+  if (act === 'toggle' || !btn) row.classList.toggle('open');
 });
 $('#memAdd').onclick = () => {
-  const t = $('#memNew').value.trim(); if (!t) return;
-  S.mems.push({ text: t, t: Date.now() }); S.mems = S.mems.slice(-MEM_MAX); save('mems');
-  $('#memNew').value = ''; renderMems(); toast('记上了');
+  const slug = $('#memSlug').value.trim(), text = $('#memNew').value.trim(), type = normType($('#memType').value);
+  if (!text) return;
+  const s = slug || slugFrom(text) || ('m' + uid());
+  const norm = x => (x || '').replace(/\s/g, '').toLowerCase();
+  const j = S.mems.findIndex(x => x.type === type && norm(x.slug) === norm(s));
+  if (j >= 0) { S.mems[j].text = text; S.mems[j].desc = shortDesc(text); S.mems[j].u = Date.now(); }
+  else S.mems.push({ id: uid(), slug: s, type, desc: shortDesc(text), text, t: Date.now(), u: Date.now() });
+  if (S.mems.length > MEM_MAX) S.mems = S.mems.slice(-MEM_MAX);
+  save('mems'); $('#memSlug').value = $('#memNew').value = ''; renderMems(); toast(j >= 0 ? '改好了' : '记上了');
 };
 $('#memNew').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) $('#memAdd').click(); });
+$('#memSlug').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); $('#memNew').focus(); } });
 $('#memClear').onclick = () => {
   if (!S.mems.length || !confirm('把他记下的 ' + S.mems.length + ' 条全部清空？人设和记忆卡不受影响。')) return;
   S.mems = []; save('mems'); renderMems(); toast('清空了');
@@ -1399,7 +1551,7 @@ $('#mdFile').onchange = async e => {
 };
 
 $('#exportBak').onclick = () => {
-  const data = { app: 'ayan', v: 4, at: new Date().toISOString(), model: S.model, vmodel: S.vmodel, persona: S.persona, card: S.card, mems: S.mems, convs: keepConvs(),
+  const data = { app: 'ayan', v: 5, at: new Date().toISOString(), model: S.model, vmodel: S.vmodel, persona: S.persona, card: S.card, mems: S.mems, convs: keepConvs(),
     avatar: S.avatar, period: S.period, ledger: S.ledger, memOn: S.memOn, ciOn: S.ciOn, ciAbout: S.ciAbout, ciHow: S.ciHow };
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
@@ -1417,6 +1569,7 @@ $('#bakFile').onchange = async e => {
     Object.assign(S, { model: d.model || S.model, vmodel: d.vmodel || S.vmodel, persona: d.persona || '', card: d.card || '', mems: d.mems || [], convs: d.convs || [],
       avatar: d.avatar || S.avatar, period: d.period || S.period, ledger: d.ledger || S.ledger,
       memOn: d.memOn != null ? d.memOn : S.memOn, ciOn: d.ciOn != null ? d.ciOn : S.ciOn, ciAbout: d.ciAbout || S.ciAbout, ciHow: d.ciHow || S.ciHow });
+    migrateMems();
     S.cur = S.convs[0] ? S.convs[0].id : null;
     save('model', 'vmodel', 'persona', 'card', 'mems', 'cur', 'avatar', 'period', 'ledger', 'memOn', 'ciOn', 'ciAbout', 'ciHow'); saveConvs(); applyAvatar(); renderHead();
     openSet(); render(); renderConvs(); toast('恢复好了');
