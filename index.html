@@ -295,6 +295,37 @@ input.tg:checked::after{transform:translateX(18px)}
   .setnav{flex-direction:column;overflow:visible;border-bottom:0;border-right:1px solid var(--line);padding:6px 10px}
   .setbody{padding:4px 24px 24px}
 }
+/* 输入框左边的「+」；联网、思考开着时才露出来，点一下关 */
+.tbtn.plus{border:1px solid var(--line2);width:32px;padding:0;justify-content:center}
+.tbtn.chip:not(.on),.tbtn[hidden]{display:none}
+.pop button .ck{margin-left:auto;color:var(--blue);font-size:13px}
+/* 经期：照美柚，月历 */
+.pcard{max-width:760px;margin:10px auto 0;padding:18px 16px;border-radius:18px;text-align:center;
+  background:linear-gradient(135deg,#ffe3e8,#ffeef1);color:#7a2d3e}
+:root:not([data-theme="light"]) .pcard{background:linear-gradient(135deg,rgba(255,120,150,.18),rgba(255,160,180,.08));color:#ffc9d4}
+.pbig{font-size:22px;font-weight:600;letter-spacing:.04em}
+.psub{font-size:13px;opacity:.8;margin-top:4px;min-height:1em}
+.pcard .row{justify-content:center;margin-top:14px}
+.pcard .btn.pri{background:#ff6f8f;color:#fff}
+.pcard .btn{border-color:rgba(255,111,143,.4);color:inherit}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.calhead b{color:var(--silver)}
+.calhead .iconbtn{font-size:22px;width:36px;height:36px}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.calgrid.wk span{font-size:12px;color:var(--faint);padding:4px 0}
+.cd{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:14px;position:relative;cursor:pointer;color:var(--text);max-width:46px;margin:0 auto;width:100%}
+.cd:hover{background:var(--press)}
+.cd.out{visibility:hidden}
+.cd.per{background:#ff6f8f;color:#fff}
+.cd.pred{border:1.5px dashed #ff8fa8;color:#ff6f8f}
+.cd.fert{background:rgba(168,128,232,.16);color:#8a63d2}
+.cd.ov{background:#a880e8;color:#fff}
+.cd.today::after{content:"";position:absolute;bottom:3px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:currentColor}
+.cd.future{opacity:.85}
+.legend{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:12px 0 4px;font-size:12px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:5px}
+.lg{width:12px;height:12px;border-radius:50%;display:inline-block}
+.lg.per{background:#ff6f8f}.lg.pred{border:1.5px dashed #ff8fa8}.lg.fert{background:rgba(168,128,232,.3)}.lg.ov{background:#a880e8}
 /* 临时对话 */
 .tempbar{max-width:780px;margin:0 auto 6px;font-size:12.5px;color:var(--muted);text-align:center;padding:6px 12px;border:1px dashed var(--line2);border-radius:12px}
 </style>
@@ -323,7 +354,6 @@ input.tg:checked::after{transform:translateX(18px)}
     <button class="iconbtn" id="menuBtn" aria-label="对话列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h12M4 17h16"/></svg></button>
     <div class="who" id="whoBtn" role="button" title="换模型"><img class="ava" src="icon.svg" alt=""><div><div class="name">阿衍 <span class="mdl" id="mdlTxt"></span></div><div class="state"><span id="state">在</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div></div>
     <button class="iconbtn" id="tempBtn" aria-label="临时对话" title="临时对话：不进列表、不碰记忆"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 3.2"><path d="M20 12a8 8 0 1 1-3.1-6.3"/><path d="M20 4v4h-4" stroke-dasharray="none"/></svg></button>
-    <button class="iconbtn" id="lifeBtn" aria-label="经期和记账" title="经期和记账"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 13.6c-1 1.3-1.6 2.1-1.6 2.8a1.6 1.6 0 0 0 3.2 0c0-.7-.6-1.5-1.6-2.8z"/></svg></button>
     <button class="iconbtn" id="newBtn" aria-label="新对话" title="新对话"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h8"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
   </header>
   <main id="chat"><div class="wrap" id="list"></div></main>
@@ -332,12 +362,13 @@ input.tg:checked::after{transform:translateX(18px)}
       <div class="pend" id="pend"></div>
       <textarea id="input" rows="1" placeholder="跟阿衍说点什么…" enterkeyhint="send"></textarea>
       <div class="tools">
-        <button class="tbtn" id="imgBtn" title="发图片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="m21 16-5-5-9 9"/></svg></button>
+        <button class="tbtn plus" id="plusBtn" aria-label="更多" title="图片、文件、联网、思考、经期、记账"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button class="tbtn" id="imgBtn" hidden title="发图片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="m21 16-5-5-9 9"/></svg></button>
         <input type="file" id="imgFile" accept="image/*" multiple hidden>
-        <button class="tbtn" id="fileBtn" title="发文件（PDF、Word、Excel、txt…）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21 11-8.6 8.6a5 5 0 0 1-7-7L14 4a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4L16 7"/></svg></button>
+        <button class="tbtn" id="fileBtn" hidden title="发文件（PDF、Word、Excel、txt…）"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21 11-8.6 8.6a5 5 0 0 1-7-7L14 4a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4L16 7"/></svg></button>
         <input type="file" id="docFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv,.json,.html,.js,.py,.log" multiple hidden>
-        <button class="tbtn" id="webBtn" title="联网搜索"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg><span>联网</span></button>
-        <button class="tbtn" id="thinkBtn" title="深度思考"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1.1 2V16h5v-.2c.1-.8.5-1.5 1.1-2A6 6 0 0 0 12 3z"/></svg><span>思考</span></button>
+        <button class="tbtn chip" id="webBtn" title="联网搜索开着，点一下关"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg><span>联网</span></button>
+        <button class="tbtn chip" id="thinkBtn" title="深度思考开着，点一下关"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1.1 2V16h5v-.2c.1-.8.5-1.5 1.1-2A6 6 0 0 0 12 3z"/></svg><span>思考</span></button>
         <span class="sp"></span>
         <button class="tbtn" id="micBtn" title="语音输入"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
         <button id="send" aria-label="发送" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
@@ -391,7 +422,7 @@ input.tg:checked::after{transform:translateX(18px)}
    </section>
 
    <section data-pane="him">
-    <div class="it"><div class="lt">头像<small>他会自己换，也可以你挑。他画的图 7 天后会自动重画</small></div>
+    <div class="it"><div class="lt">头像<small>他会自己换（你在聊天里让他换也行），也可以你挑。画好的图存在这台设备上</small></div>
       <img id="avaPrev" class="ava" src="icon.svg" alt="" onerror="this.src='icon.svg'"></div>
     <div class="blk"><div class="addrow"><button class="btn" id="avaUp">换一张图</button><button class="btn" id="avaGen">让他自己换</button><button class="btn" id="avaReset">恢复默认</button></div></div>
     <input type="file" id="avaFile" accept="image/*" hidden>
@@ -419,20 +450,28 @@ input.tg:checked::after{transform:translateX(18px)}
  </div>
 </div>
 
-<div class="sheet" id="life">
-  <div class="bar"><b>生活</b><button class="btn pri" id="closeLife">完成</button></div>
-  <p class="hint" style="max-width:760px;margin:4px auto 0;font-size:12.5px;color:var(--muted)">也可以直接跟阿衍说"早饭花了 8 块""我来例假了"，他会帮你记在这里。</p>
-  <div class="sec">
-    <h3>🌙 经期</h3>
-    <p class="hint" id="perInfo">还没记过</p>
-    <div class="row">
-      <button class="btn pri" id="perStart">今天来了</button><button class="btn" id="perEnd">今天走了</button>
-    </div>
-    <div class="row"><input type="date" id="perDate"><button class="btn" id="perAdd">补记这天来的</button></div>
-    <ul class="mems" id="perList" style="margin-top:8px"></ul>
+<div class="sheet" id="per">
+  <div class="bar"><b>🌙 经期</b><button class="btn pri" id="closePer">完成</button></div>
+  <div class="pcard">
+    <div class="pbig" id="perInfo">还没记过</div>
+    <div class="psub" id="perSub"></div>
+    <div class="row"><button class="btn pri" id="perStart">今天来了</button><button class="btn" id="perEnd">今天走了</button></div>
   </div>
+  <div class="sec cal">
+    <div class="calhead"><button class="iconbtn" id="calPrev" aria-label="上个月">‹</button><b id="calTitle"></b><button class="iconbtn" id="calNext" aria-label="下个月">›</button></div>
+    <div class="calgrid wk"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+    <div class="calgrid" id="calDays"></div>
+    <div class="legend"><span><i class="lg per"></i>经期</span><span><i class="lg pred"></i>预测经期</span><span><i class="lg fert"></i>易孕期</span><span><i class="lg ov"></i>排卵日</span></div>
+    <p class="hint">点哪天就记哪天：来了、走了、删掉。预测按你自己记的周期算，只是估计。</p>
+  </div>
+  <div class="sec"><h3>最近几次</h3><ul class="mems" id="perList"></ul></div>
+  <p class="hint" style="max-width:760px;margin:0 auto;font-size:12.5px;color:var(--muted);text-align:center">也可以直接跟阿衍说「我来例假了」，他会帮你记。</p>
+</div>
+
+<div class="sheet" id="life">
+  <div class="bar"><b>📒 记账</b><button class="btn pri" id="closeLife">完成</button></div>
+  <p class="hint" style="max-width:760px;margin:4px auto 0;font-size:12.5px;color:var(--muted)">也可以直接跟阿衍说「早饭花了 8 块」，他会帮你记在这里。</p>
   <div class="sec">
-    <h3>📒 记账</h3>
     <p class="hint" id="ledSum">还没记过</p>
     <div class="row">
       <select id="ledType"><option value="-1">支出</option><option value="1">收入</option></select>
@@ -558,8 +597,7 @@ function takeTags(t) {
     if (/来|开始/.test(v)) { if (periodStart(ymd(Date.now()))) notes.push('🌙 记下了：今天来例假'); }
     else if (/走|结束|干净/.test(v)) { if (periodEnd(ymd(Date.now()))) notes.push('🌙 记下了：今天结束'); }
   }
-  const av = t.match(/\[\[\s*换头像\s*[|｜]([^\]]+)\]\]/);
-  if (av) { genAvatar(av[1].trim()); notes.push('🖼 他在换头像…'); }
+  // 换头像不在这里做，ask() 里接着处理（要把结果写回那条消息）
   if (notes.length) save('ledger', 'period');
   return notes;
 }
@@ -781,6 +819,11 @@ async function ask(c) {
   if (bot.content) {
     const got = takeMems(bot.content, c); if (got.length) bot.saved = got;
     const notes = takeTags(bot.content); if (notes.length) bot.notes = notes;
+    // 换头像：他写了暗号就照他的画；没写但她明明让他换了，就替他想一个
+    const av = bot.content.match(/\[\[\s*换头像\s*[|｜]([^\]]+)\]\]/);
+    const lastU = [...c.msgs].reverse().find(m => m.role === 'user');
+    const asked = lastU && /(换|改|画|弄).{0,8}头像|头像.{0,8}(换|改|画)/.test(lastU.content || '');
+    if (av || asked) setTimeout(() => avatarInChat(c, bot, av ? av[1].trim() : '', lastU && lastU.content), 0);
   }
   c.t = Date.now(); ctrl = null;
   saveConvs(); setBusy(false); render(); scrollEnd(); renderConvs();
@@ -916,6 +959,22 @@ input.addEventListener('keydown', e => {
 $('#send').addEventListener('click', () => send());
 $('#webBtn').onclick = () => { S.web = !S.web; save('web'); renderTools(); toast(S.web ? '联网开了：它会先查再说' : '联网关了'); };
 $('#thinkBtn').onclick = () => { S.think = !S.think; save('think'); renderTools(); toast(S.think ? '深度思考开了：回得慢一点，想得多一点' : '深度思考关了'); };
+// 「+」：跟 GPT 一样，工具都收在这里
+$('#plusBtn').onclick = e => {
+  e.stopPropagation();
+  if (pop.classList.contains('on')) return closePop();
+  const ck = on => on ? '<span class="ck">✓ 开着</span>' : '';
+  openPop(`<button data-v="img">🖼 图片</button><button data-v="file">📎 文件<small>PDF、Word、Excel…</small></button><hr>
+    <button data-v="web">🌐 联网搜索${ck(S.web)}</button><button data-v="think">💡 深度思考${ck(S.think)}</button><hr>
+    <button data-v="per">🌙 经期</button><button data-v="led">📒 记账</button>`, $('#plusBtn'), v => {
+    if (v === 'img') $('#imgFile').click();
+    else if (v === 'file') $('#docFile').click();
+    else if (v === 'web') $('#webBtn').click();
+    else if (v === 'think') $('#thinkBtn').click();
+    else if (v === 'per') openPer();
+    else if (v === 'led') openLife();
+  });
+};
 
 $('#list').addEventListener('click', e => {
   const st = e.target.closest('[data-start]'); if (st) return send(st.dataset.start);
@@ -1084,23 +1143,91 @@ function lifeSummary() {
   if (S.ledger.length) { const s = ledgerSum(); out.push(`记账：今天支出 ${s.td}；这个月支出 ${s.mOut}、收入 ${s.mIn}。`); }
   return out.join('\n');
 }
-function renderLife() {
-  const p = periodInfo();
-  $('#perInfo').textContent = p ? p.text + ` · 周期按 ${p.avg} 天算` + (p.guess ? '（记满两次以后按你自己的算）' : '') : '还没记过。来的那天点「今天来了」。';
+// ---------- 经期月历（照美柚：红=经期，虚线=预测，紫=易孕期，深紫=排卵日） ----------
+function perLen() {
+  const L = S.period.filter(p => p.e).map(p => dDiff(p.s, p.e) + 1).filter(n => n >= 2 && n <= 10).slice(-6);
+  return L.length ? Math.round(L.reduce((a, b) => a + b, 0) / L.length) : 5;
+}
+const perEndOf = (p, len, today) => p.e || (dDiff(p.s, today) >= 0 && dDiff(p.s, today) < len ? today : addDays(p.s, len - 1));
+function dayMarks() {
+  const m = {}, today = ymd(Date.now()), len = perLen(), P = sortPeriod();
+  const rank = { fert: 1, pred: 2, ov: 3, per: 4 };
+  const set = (d, k) => { if (!m[d] || rank[k] > rank[m[d]]) m[d] = k; };
+  for (const p of P) for (let d = p.s, e = perEndOf(p, len, today); d <= e; d = addDays(d, 1)) set(d, 'per');
+  const info = periodInfo(); if (!info) return m;
+  const last = P[P.length - 1];
+  if (!last.e) for (let d = addDays(today, 1), e = addDays(last.s, len - 1); d <= e; d = addDays(d, 1)) set(d, 'pred');
+  const starts = P.map(p => p.s);
+  for (let k = 1; k <= 3; k++) {
+    const st = addDays(last.s, info.avg * k); starts.push(st);
+    for (let i = 0; i < len; i++) { const d = addDays(st, i); if (d >= today) set(d, 'pred'); }
+  }
+  // 排卵日 = 下次来的前 14 天；易孕期是它前 5 天到后 4 天
+  for (let i = 1; i < starts.length; i++) {
+    const gap = dDiff(starts[i - 1], starts[i]); if (gap < 18 || gap > 45) continue;
+    const ov = addDays(starts[i], -14);
+    for (let j = -5; j <= 4; j++) set(addDays(ov, j), 'fert');
+    set(ov, 'ov');
+  }
+  return m;
+}
+let calM = null;
+function renderCal() {
+  const today = ymd(Date.now()); if (!calM) calM = today.slice(0, 7);
+  const [y, mo] = calM.split('-').map(Number);
+  $('#calTitle').textContent = `${y} 年 ${mo} 月`;
+  const dow = new Date(Date.UTC(y, mo - 1, 1)).getUTCDay(), n = new Date(Date.UTC(y, mo, 0)).getUTCDate(), marks = dayMarks();
+  let h = '<span class="cd out"></span>'.repeat(dow);
+  for (let d = 1; d <= n; d++) {
+    const ds = calM + '-' + String(d).padStart(2, '0');
+    h += `<button class="cd ${marks[ds] || ''}${ds === today ? ' today' : ''}${ds > today ? ' future' : ''}" data-day="${ds}">${d}</button>`;
+  }
+  $('#calDays').innerHTML = h;
+}
+function renderPer() {
+  const p = periodInfo(), len = perLen();
+  $('#perInfo').textContent = p ? p.text.replace(/（预计.*?）/, '') : '还没记过';
+  $('#perSub').textContent = p ? `周期约 ${p.avg} 天 · 每次约 ${len} 天` + (p.guess ? '（记满两次后按你自己的算）' : '') : '来的那天点「今天来了」，或者在下面的日历上点那天';
   $('#perList').innerHTML = S.period.slice(-8).reverse().map(x =>
-    `<li><span>${mdTxt(x.s)} 来${x.e ? ' → ' + mdTxt(x.e) + ' 走（' + (dDiff(x.s, x.e) + 1) + ' 天）' : ''}</span><button data-pd="${x.s}">删</button></li>`).join('');
+    `<li><span>${mdTxt(x.s)} 来${x.e ? ' → ' + mdTxt(x.e) + ' 走（' + (dDiff(x.s, x.e) + 1) + ' 天）' : ''}</span><button data-pd="${x.s}">删</button></li>`).join('') || '<li><span style="color:var(--faint)">还没有</span></li>';
+  renderCal();
+}
+function renderLedger() {
   const s = ledgerSum();
   $('#ledSum').textContent = S.ledger.length ? `今天花了 ${s.td} · 这个月花了 ${s.mOut}，进账 ${s.mIn}` : '还没记过。';
   $('#ledList').innerHTML = S.ledger.slice(-50).reverse().map(x =>
     `<li><span>${esc(x.note || (x.amt < 0 ? '支出' : '收入'))} <small>${dayLabel(x.t)} ${hm(x.t)}</small></span><b class="${x.amt < 0 ? 'neg' : 'pos'}">${money(x.amt)}</b><button data-ld="${x.id}">删</button></li>`).join('');
 }
-function openLife() { closeSide(); $('#perDate').value = ymd(Date.now()); renderLife(); $('#life').classList.add('on'); }
-$('#lifeBtn').onclick = openLife;
+function renderLife() { renderPer(); renderLedger(); }
+function openPer() { closeSide(); calM = null; renderPer(); $('#per').classList.add('on'); }
+function openLife() { closeSide(); renderLedger(); $('#life').classList.add('on'); }
+$('#closePer').onclick = () => { $('#per').classList.remove('on'); closePop(); };
 $('#closeLife').onclick = () => { $('#life').classList.remove('on'); };
-$('#perStart').onclick = () => { toast(periodStart(ymd(Date.now())) ? '记下了，今天来的。多喝热水不是废话' : '这次已经记过了'); renderLife(); };
-$('#perEnd').onclick = () => { toast(periodEnd(ymd(Date.now())) ? '记下了，今天走的' : '没有正在进行的那次'); renderLife(); };
-$('#perAdd').onclick = () => { const d = $('#perDate').value; if (!d) return; S.period.push({ s: d, e: null }); sortPeriod(); save('period'); renderLife(); toast('补记了 ' + mdTxt(d)); };
-$('#perList').addEventListener('click', e => { const b = e.target.closest('[data-pd]'); if (!b || !confirm('删掉这条？')) return; S.period = S.period.filter(x => x.s !== b.dataset.pd); save('period'); renderLife(); });
+$('#perStart').onclick = () => { toast(periodStart(ymd(Date.now())) ? '记下了，今天来的。多喝热水不是废话' : '这次已经记过了'); renderPer(); };
+$('#perEnd').onclick = () => { toast(periodEnd(ymd(Date.now())) ? '记下了，今天走的' : '没有正在进行的那次'); renderPer(); };
+$('#perList').addEventListener('click', e => { const b = e.target.closest('[data-pd]'); if (!b || !confirm('删掉这条？')) return; S.period = S.period.filter(x => x.s !== b.dataset.pd); save('period'); renderPer(); });
+$('#calPrev').onclick = () => { const [y, m] = calM.split('-').map(Number); calM = m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`; renderCal(); };
+$('#calNext').onclick = () => { const [y, m] = calM.split('-').map(Number); calM = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`; renderCal(); };
+// 点日历上的某天：来了 / 走了 / 删掉这次
+$('#calDays').addEventListener('click', e => {
+  const b = e.target.closest('[data-day]'); if (!b) return;
+  e.stopPropagation();
+  const d = b.dataset.day, today = ymd(Date.now());
+  if (d > today) return toast('还没到这天');
+  const len = perLen(), hit = S.period.find(p => p.s <= d && d <= perEndOf(p, len, today));
+  openPop(`<div class="ttl">${mdTxt(d)}</div><button data-v="s">🩸 这天来了</button><button data-v="e">🌤 这天走了</button>${hit ? '<hr><button data-v="x" class="danger">🗑 删掉这次（' + mdTxt(hit.s) + ' 来的）</button>' : ''}`, b, v => {
+    if (v === 's') {
+      if (S.period.some(p => p.s === d)) return toast('这天已经记过了');
+      if (hit && hit.s < d) hit.s = d; else S.period.push({ s: d, e: null });
+      sortPeriod(); save('period'); toast('记下了：' + mdTxt(d) + ' 来的');
+    } else if (v === 'e') {
+      const p = [...sortPeriod()].reverse().find(p => p.s <= d && dDiff(p.s, d) < 15);
+      if (!p) return toast('这天之前没有记来的那天');
+      p.e = d; save('period'); toast('记下了：' + mdTxt(d) + ' 走的');
+    } else if (v === 'x') { S.period = S.period.filter(p => p !== hit); save('period'); toast('删掉了'); }
+    renderPer();
+  });
+});
 $('#ledAdd').onclick = () => {
   const v = parseFloat($('#ledAmt').value.replace(/[^\d.]/g, ''));
   if (!v) return toast('金额填一下');
@@ -1112,9 +1239,18 @@ $('#ledList').addEventListener('click', e => { const b = e.target.closest('[data
 // ---------- 头像：他自己描述，cogview-3-flash 画（免费）；图片地址 7 天过期，过期按原描述重画 ----------
 const IMG_API = 'https://open.bigmodel.cn/api/paas/v4/images/generations';
 let avaBusy = false;
+// 画好的图尽量存成本机图片：智谱的图片网址开着梯子可能打不开，7 天后也会过期
+async function keepLocal(url) {
+  try { const b = await (await fetch(url)).blob(); return { src: await shrink(b, 256), local: true }; }
+  catch { return { src: url, local: false }; }
+}
+// 返回 '' 表示换好了，否则是没换成的原因
 async function genAvatar(desc, quiet) {
-  if (avaBusy || !S.key.trim() || !desc) return;
+  if (avaBusy) return '上一张还在画';
+  if (!S.key.trim()) return '没填 Key';
+  if (!desc) return '没想好画什么';
   avaBusy = true;
+  let err = '';
   try {
     const r = await fetch(IMG_API, {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
@@ -1122,11 +1258,35 @@ async function genAvatar(desc, quiet) {
     });
     const j = await r.json(), url = j.data && j.data[0] && j.data[0].url;
     if (!url) throw new Error((j.error && j.error.message) || '没画出来');
-    await new Promise((ok, no) => { const im = new Image(); im.onload = ok; im.onerror = no; im.src = url; });
-    S.avatar = { src: url, t: Date.now(), desc, gen: true }; save('avatar'); applyAvatar();
+    const k = await keepLocal(url);
+    if (!k.local) await new Promise((ok, no) => { const im = new Image(); im.onload = ok; im.onerror = () => no(new Error('画好了但图片打不开，关掉梯子再试')); im.src = url; });
+    S.avatar = { src: k.src, t: Date.now(), desc, gen: !k.local }; save('avatar'); applyAvatar();
     if (!quiet) toast('阿衍换了新头像');
-  } catch (e) { if (!quiet) toast('头像没换成：' + (e && e.message || '网络不好')); }
+  } catch (e) { err = (e && e.message) || '网络不好'; if (!quiet) toast('头像没换成：' + err); }
   avaBusy = false;
+  return err;
+}
+// 让他用一句话描述新头像（hint 是她提的要求）
+async function describeAvatar(hint) {
+  const r = await fetch(API, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
+    body: JSON.stringify({ model: 'glm-4-flash', messages: [
+      { role: 'system', content: S.persona.trim() || '你叫阿衍。' },
+      { role: 'user', content: '你要给自己换一个新头像。' + (hint ? '她说：「' + hint + '」。' : '') + '用一句话描述画面（画的是谁或什么、画风、颜色），只输出这句描述，不要别的。' }] })
+  });
+  const j = await r.json(), desc = j.choices && j.choices[0].message.content.trim().replace(/^["“]|["”]$/g, '');
+  if (!desc) throw 0;
+  return desc;
+}
+// 聊天里换头像：结果写在那条消息下面
+async function avatarInChat(c, bot, desc, hint) {
+  const note = '🖼 他在换头像…';
+  bot.notes = [...(bot.notes || []).filter(n => !n.startsWith('🖼')), note];
+  render();
+  let err = '';
+  try { if (!desc) desc = await describeAvatar(hint); err = await genAvatar(desc, true); } catch { err = '他没想好画什么'; }
+  bot.notes = bot.notes.map(n => n === note ? (err ? '🖼 头像没换成：' + err : '🖼 换了新头像') : n);
+  saveConvs(); render();
 }
 $('#avaUp').onclick = () => $('#avaFile').click();
 $('#avaFile').onchange = async e => {
@@ -1137,17 +1297,9 @@ $('#avaReset').onclick = () => { S.avatar = null; save('avatar'); applyAvatar();
 $('#avaGen').onclick = async () => {
   if (!S.key.trim()) return toast('先填 Key');
   toast('他在想换成什么样…');
-  try {
-    const r = await fetch(API, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
-      body: JSON.stringify({ model: 'glm-4-flash', messages: [
-        { role: 'system', content: S.persona.trim() || '你叫阿衍。' },
-        { role: 'user', content: '你要给自己换一个新头像。用一句话描述画面（画的是谁或什么、画风、颜色），只输出这句描述，不要别的。' }] })
-    });
-    const j = await r.json(), desc = j.choices && j.choices[0].message.content.trim().replace(/^["“]|["”]$/g, '');
-    if (!desc) throw 0;
-    toast('他想要：' + desc.slice(0, 40)); genAvatar(desc);
-  } catch { toast('他没想好，等会儿再试'); }
+  let desc;
+  try { desc = await describeAvatar(); } catch { return toast('他没想好，等会儿再试'); }
+  toast('他想要：' + desc.slice(0, 40)); genAvatar(desc);
 };
 
 // ---------- 余额 ----------
