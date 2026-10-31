@@ -254,6 +254,47 @@ aside .top b{color:var(--silver);letter-spacing:.12em;flex:1}
 .conv:hover .more,.conv.on .more{opacity:1}
 @media (hover:none){.conv .more{opacity:1}}
 .conv .pin{font-size:11px;opacity:.7}
+/* 设置：跟 GPT 一样，左边分类、右边一行一项 */
+.sheet.setx{padding:0;background:var(--mask);overflow:hidden}
+.sheet.setx.on{display:flex;align-items:center;justify-content:center}
+.setbox{width:100%;height:100%;background:var(--bg2);display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 1fr;overflow:hidden}
+.sethead{display:flex;align-items:center;justify-content:space-between;padding:calc(8px + var(--safe-t)) 10px 4px 20px}
+.sethead b{font-size:18px;font-weight:600;color:var(--silver)}
+.setnav{display:flex;gap:4px;overflow-x:auto;padding:4px 14px 10px;border-bottom:1px solid var(--line);scrollbar-width:none}
+.setnav::-webkit-scrollbar{display:none}
+.setnav button{display:flex;align-items:center;gap:7px;flex:none;padding:7px 12px;border-radius:10px;font-size:14px;color:var(--muted);white-space:nowrap}
+.setnav button svg{width:17px;height:17px}
+.setnav button:hover{background:var(--press)}
+.setnav button.on{background:var(--conv-on);color:var(--silver)}
+.setbody{overflow-y:auto;padding:4px 20px calc(24px + var(--safe-b))}
+.setbody section{display:none}
+.setbody section.on{display:block}
+.setbody .it{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.setbody .lt{min-width:0}
+.setbody .lt small,.setbody .blk label small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+.setbody .it select,.setbody .it input[type=text]{width:auto;max-width:52%;min-width:0;flex:none;background:var(--panel);border:1px solid var(--line2);border-radius:10px;padding:7px 10px;outline:0;font-size:14px}
+.setbody .blk{padding:12px 0;border-bottom:1px solid var(--line)}
+.setbody .blk label{display:block;font-size:14.5px;margin-bottom:8px}
+.setbody .blk textarea,.setbody .blk input[type=text],.setbody .blk input[type=password]{width:100%;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:10px 12px;outline:0;font-size:15px;line-height:1.55;resize:vertical}
+.setbody .addrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.setbody .addrow input{flex:1 1 180px;width:auto}
+.setbody .addrow a.btn{display:inline-grid;place-items:center;text-decoration:none}
+.setbody .mems{margin:8px 0}
+.setbody #avaPrev{width:48px;height:48px}
+.btn.danger{color:var(--danger)}
+.setbody .btn{white-space:nowrap;flex:none}
+/* 开关做成 GPT 那种小胶囊 */
+input.tg{appearance:none;-webkit-appearance:none;width:42px;height:24px;border-radius:12px;background:var(--line2);position:relative;cursor:pointer;flex:none;transition:background .2s;margin:0}
+input.tg::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+input.tg:checked{background:var(--blue)}
+input.tg:checked::after{transform:translateX(18px)}
+@media (min-width:760px){
+  .setbox{width:min(760px,92vw);height:min(600px,86vh);border-radius:18px;border:1px solid var(--line2);box-shadow:0 20px 60px rgba(0,0,0,.3);
+    grid-template-columns:190px minmax(0,1fr);grid-template-rows:auto 1fr}
+  .sethead{grid-column:1/-1;padding:12px 12px 4px 22px}
+  .setnav{flex-direction:column;overflow:visible;border-bottom:0;border-right:1px solid var(--line);padding:6px 10px}
+  .setbody{padding:4px 24px 24px}
+}
 /* 临时对话 */
 .tempbar{max-width:780px;margin:0 auto 6px;font-size:12.5px;color:var(--muted);text-align:center;padding:6px 12px;border:1px dashed var(--line2);border-radius:12px}
 </style>
@@ -306,104 +347,76 @@ aside .top b{color:var(--silver);letter-spacing:.12em;flex:1}
 </div>
 </div>
 
-<div class="sheet" id="sheet">
-  <div class="bar"><b>设置</b><button class="btn pri" id="closeSet">完成</button></div>
+<div class="sheet setx" id="sheet">
+ <div class="setbox">
+  <div class="sethead"><b>设置</b><button class="iconbtn" id="closeSet" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <nav class="setnav" id="setNav">
+    <button data-tab="gen" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>常规</button>
+    <button data-tab="per"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.3 7.2 17.9l.9-5.4-3.9-3.8 5.4-.8z"/></svg>个性化</button>
+    <button data-tab="him"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>阿衍</button>
+    <button data-tab="acc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/></svg>Key 和余额</button>
+    <button data-tab="data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.7 3.6 3 8 3s8-1.3 8-3v-13M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>数据</button>
+  </nav>
+  <div class="setbody">
 
-  <div class="sec">
-    <h3>智谱 Key</h3>
-    <p class="hint">open.bigmodel.cn → 个人中心 → API Keys。只存在这台设备上，不上传任何地方。</p>
-    <input type="password" id="key" placeholder="粘贴 API Key" autocomplete="off">
-    <label class="lb">聊天模型</label>
-    <select id="model">
-      <option value="glm-4.7-flash">glm-4.7-flash（免费）</option>
-      <option value="glm-4.5-flash">glm-4.5-flash（免费，能深度思考）</option>
-      <option value="glm-4-flash">glm-4-flash（免费，最快）</option>
-      <option value="glm-5-turbo">glm-5-turbo</option>
-      <option value="glm-5.1">glm-5.1</option>
-      <option value="glm-5.2">glm-5.2</option>
-      <option value="glm-5.3">glm-5.3（最新，一直会思考）</option>
-    </select>
-    <label class="lb">看图模型（发了图片的那条用它）</label>
-    <input type="text" id="vmodel" placeholder="glm-4v-flash">
-    <p class="hint" style="margin-top:8px">免费的先用着；要换贵的，账户里得有余额。免费模型人多挤不进去时，会自动换另一个免费的再试。</p>
-  </div>
+   <section data-pane="gen" class="on">
+    <div class="it"><div class="lt">外观</div>
+      <select id="theme"><option value="light">白色</option><option value="dark">深夜</option><option value="auto">跟着系统</option></select></div>
+    <div class="it"><div class="lt">聊天模型<small>免费的先用着；换贵的要账户里有余额</small></div>
+      <select id="model">
+        <option value="glm-4.7-flash">glm-4.7-flash（免费）</option>
+        <option value="glm-4.5-flash">glm-4.5-flash（免费，能深度思考）</option>
+        <option value="glm-4-flash">glm-4-flash（免费，最快）</option>
+        <option value="glm-5-turbo">glm-5-turbo</option>
+        <option value="glm-5.1">glm-5.1</option>
+        <option value="glm-5.2">glm-5.2</option>
+        <option value="glm-5.3">glm-5.3（最新，一直会思考）</option>
+      </select></div>
+    <div class="it"><div class="lt">看图模型<small>发了图片的那条用它</small></div><input type="text" id="vmodel" placeholder="glm-4v-flash"></div>
+    <div class="it"><div class="lt">记住最近多少条<small>越多越懂上下文，也越费</small></div>
+      <select id="ctxN"><option value="20">20 条</option><option value="30">30 条</option><option value="50">50 条</option><option value="80">80 条</option></select></div>
+    <div class="it"><div class="lt">自动朗读新回复<small>不开也能点每条下面的「读」</small></div><input type="checkbox" class="tg" id="autoRead"></div>
+   </section>
 
-  <div class="sec">
-    <h3>余额</h3>
-    <p class="hint">智谱账户里还剩多少钱、一共花了多少。每次聊完会自己刷新。</p>
-    <div class="row" style="margin-top:0;align-items:center"><span id="balDetail" style="flex:1;font-size:14px">—</span><button class="btn" id="balRefresh">刷新</button><a class="btn" style="display:inline-grid;place-items:center;text-decoration:none" href="https://open.bigmodel.cn/finance/pay" target="_blank" rel="noopener">去充值</a></div>
-  </div>
+   <section data-pane="per">
+    <div class="it"><div class="lt">自定义指令<small>每次说话都会带上。人设管「他是谁」，这里管「你想让他知道什么、怎么回你」</small></div><input type="checkbox" class="tg" id="ciOn"></div>
+    <div class="blk"><label>想让阿衍知道你的什么？</label>
+      <textarea id="ciAbout" rows="3" placeholder="怎么称呼你、做什么的、最近在忙什么"></textarea></div>
+    <div class="blk"><label>希望阿衍怎么回答？</label>
+      <textarea id="ciHow" rows="3" placeholder="长短、语气、要不要分点……"></textarea></div>
+    <div class="it"><div class="lt">记忆<small>他会把以后用得上的事自己记下来。关掉后既不看也不记，已有的不删；临时对话不碰这里</small></div><input type="checkbox" class="tg" id="memOn"></div>
+    <div class="blk"><div class="addrow"><input type="text" id="memNew" placeholder="手动加一条，比如：她不吃香菜"><button class="btn" id="memAdd">加上</button></div>
+      <ul class="mems" id="mems"></ul>
+      <button class="btn danger" id="memClear">全部清空</button></div>
+   </section>
 
-  <div class="sec">
-    <h3>阿衍的头像</h3>
-    <p class="hint">他会自己换（心情变了、你让他换）。也可以你给他挑一张。他自己画的图 7 天后会过期，到时候按同样的样子自动重画。</p>
-    <div class="row" style="margin-top:0;align-items:center">
-      <img id="avaPrev" class="ava" style="width:64px;height:64px" src="icon.svg" alt="" onerror="this.src='icon.svg'">
-      <button class="btn" id="avaUp">换一张图</button><button class="btn" id="avaGen">让他自己换</button><button class="btn" id="avaReset">恢复默认</button>
-    </div>
+   <section data-pane="him">
+    <div class="it"><div class="lt">头像<small>他会自己换，也可以你挑。他画的图 7 天后会自动重画</small></div>
+      <img id="avaPrev" class="ava" src="icon.svg" alt="" onerror="this.src='icon.svg'"></div>
+    <div class="blk"><div class="addrow"><button class="btn" id="avaUp">换一张图</button><button class="btn" id="avaGen">让他自己换</button><button class="btn" id="avaReset">恢复默认</button></div></div>
     <input type="file" id="avaFile" accept="image/*" hidden>
-  </div>
-
-  <div class="sec">
-    <h3>说话方式</h3>
-    <div class="sw"><span>朗读阿衍说的话<small>每条下面会有「读」按钮；打开这个会自动读新回复</small></span><input type="checkbox" id="autoRead"></div>
-    <label class="lb">记住最近多少条（越多越懂上下文，也越费）</label>
-    <select id="ctxN"><option value="20">20 条</option><option value="30">30 条</option><option value="50">50 条</option><option value="80">80 条</option></select>
-  </div>
-
-  <div class="sec">
-    <h3>外观</h3>
-    <select id="theme">
-      <option value="light">白色</option>
-      <option value="dark">深夜</option>
-      <option value="auto">跟着系统（白天白、晚上黑）</option>
-    </select>
-  </div>
-
-  <div class="sec">
-    <h3>自定义指令</h3>
-    <p class="hint">跟 GPT 设置里那两栏一样，每次说话都会带上。人设管「他是谁」，这里管「你想让他知道什么、怎么回你」。</p>
-    <div class="sw"><span>打开自定义指令</span><input type="checkbox" id="ciOn"></div>
-    <label class="lb">想让阿衍知道你的什么？（怎么称呼你、做什么的、最近在忙什么）</label>
-    <textarea id="ciAbout" style="min-height:90px" placeholder="比如：我开沙县小吃，早上 8 点上班……"></textarea>
-    <label class="lb">希望阿衍怎么回答？（长短、语气、要不要分点）</label>
-    <textarea id="ciHow" style="min-height:90px" placeholder="比如：说话短一点，别分点列表，别说教……"></textarea>
-  </div>
-
-  <div class="sec">
-    <h3>导入人格包</h3>
-    <p class="hint">选那份「阿衍 · 迁移人格包」.md：第一部分进人设，第二部分进记忆卡。</p>
+    <div class="it"><div class="lt">导入人格包<small>那份 .md：第一部分进人设，第二部分进记忆卡</small></div><button class="btn" id="importMd">选文件</button></div>
     <input type="file" id="mdFile" accept=".md,.txt,text/markdown,text/plain" hidden>
-    <div class="row"><button class="btn pri" id="importMd">选文件导入</button></div>
-  </div>
+    <div class="blk"><label>人设<small>阿衍是谁、怎么说话</small></label><textarea id="persona" rows="7" placeholder="（还没导入）"></textarea></div>
+    <div class="blk"><label>记忆卡<small>她是谁，每次说话都会带上</small></label><textarea id="card" rows="7" placeholder="（还没导入）"></textarea></div>
+   </section>
 
-  <div class="sec">
-    <h3>人设</h3>
-    <p class="hint">阿衍是谁、怎么说话。</p>
-    <textarea id="persona" placeholder="（还没导入）"></textarea>
-  </div>
+   <section data-pane="acc">
+    <div class="blk"><label>智谱 API Key<small>open.bigmodel.cn → 个人中心 → API Keys。只存在这台设备上</small></label>
+      <input type="password" id="key" placeholder="粘贴 API Key" autocomplete="off"></div>
+    <div class="it"><div class="lt">余额<small id="balDetail">—</small></div>
+      <div class="addrow"><button class="btn" id="balRefresh">刷新</button><a class="btn" href="https://open.bigmodel.cn/finance/pay" target="_blank" rel="noopener">充值</a></div></div>
+   </section>
 
-  <div class="sec">
-    <h3>记忆卡</h3>
-    <p class="hint">她是谁。每次说话都会带上。</p>
-    <textarea id="card" placeholder="（还没导入）"></textarea>
-  </div>
-
-  <div class="sec">
-    <h3>记忆</h3>
-    <p class="hint">聊天时他觉得该记的，会自己记在这里（最多 80 条）。不对的可以删，也可以自己加。临时对话不会用、也不会改这里。</p>
-    <div class="sw"><span>让阿衍记住、用上这些<small>关掉以后他既不看这些，也不再记新的；里面的东西不会删</small></span><input type="checkbox" id="memOn"></div>
-    <div class="row"><input type="text" id="memNew" placeholder="手动加一条，比如：她不吃香菜" style="flex:1 1 200px;width:auto"><button class="btn" id="memAdd">加上</button></div>
-    <ul class="mems" id="mems" style="margin-top:8px"></ul>
-    <div class="row"><button class="btn" id="memClear" style="color:var(--danger)">全部清空</button></div>
-  </div>
-
-  <div class="sec">
-    <h3>备份</h3>
-    <p class="hint">换设备、清缓存之前导出一份。包括人设、记忆、所有对话（不含 Key）。手机和电脑的记录不互通，想搬就导出再导入。</p>
+   <section data-pane="data">
+    <div class="it"><div class="lt">导出备份<small>人设、记忆、所有对话、记账和经期（不含 Key）。换设备、清缓存之前导一份</small></div><button class="btn" id="exportBak">导出</button></div>
+    <div class="it"><div class="lt">从备份恢复<small>会替换现在的人设、记忆和全部对话</small></div><button class="btn" id="importBak">选文件</button></div>
     <input type="file" id="bakFile" accept=".json,application/json" hidden>
-    <div class="row"><button class="btn" id="exportBak">导出备份</button><button class="btn" id="importBak">从备份恢复</button></div>
+    <div class="it"><div class="lt">手机和电脑同步<small>现在还不同步：各存各的。想搬就在一边导出、另一边恢复</small></div></div>
+   </section>
+
   </div>
+ </div>
 </div>
 
 <div class="sheet" id="life">
@@ -1186,6 +1199,15 @@ function closeSet() {
 }
 $('#setBtn').onclick = openSet;
 $('#closeSet').onclick = closeSet;
+// 点窗口外面、按 Esc 也算关（电脑上）
+$('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSet(); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && $('#sheet').classList.contains('on')) closeSet(); });
+$('#setNav').addEventListener('click', e => {
+  const b = e.target.closest('[data-tab]'); if (!b) return;
+  document.querySelectorAll('#setNav [data-tab]').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.setbody [data-pane]').forEach(x => x.classList.toggle('on', x.dataset.pane === b.dataset.tab));
+  $('.setbody').scrollTop = 0;
+});
 $('#mems').addEventListener('click', e => {
   const b = e.target.closest('[data-mi]'); if (!b) return;
   S.mems.splice(+b.dataset.mi, 1); save('mems'); renderMems();
