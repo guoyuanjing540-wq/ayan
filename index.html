@@ -209,6 +209,33 @@ aside .top b{color:var(--silver);letter-spacing:.12em;flex:1}
 .mems li span{flex:1}
 .mems li small{color:var(--faint)}
 .mems li button{color:var(--faint);font-size:13px}
+.momentry{position:relative}
+.dot{display:none;position:absolute;top:8px;right:12px;width:8px;height:8px;border-radius:50%;background:#e5534b}
+.dot.on{display:block}
+#menuBtn{position:relative}
+#menuBtn .dot{top:6px;right:6px}
+.momhead{max-width:640px;margin:6px auto 14px;display:flex;align-items:center;gap:12px}
+.momhead .ava{width:52px;height:52px;border-radius:14px}
+.momhead b{display:block;font-size:16px}
+.momhead small{color:var(--muted);font-size:12.5px}
+.momfeed{max-width:640px;margin:0 auto}
+.mp{display:flex;gap:10px;padding:14px 0;border-top:1px solid var(--line)}
+.mp>.ava{width:40px;height:40px;border-radius:10px;flex:none}
+.mp .mb{flex:1;min-width:0}
+.mp .mn{font-weight:600;color:#5d7fc4;font-size:14.5px}
+.mp .mt{margin:3px 0 6px;font-size:15px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.mp .mi{display:block;max-width:min(72%,300px);border-radius:6px;cursor:zoom-in;margin-bottom:6px}
+.mp .mf{display:flex;align-items:center;justify-content:space-between;color:var(--faint);font-size:12.5px}
+.mp .mf button{color:var(--muted);font-size:13px;padding:2px 6px;border-radius:6px;background:var(--press)}
+.mp .mf button.liked{color:#e5534b}
+.mp .mc{margin-top:8px;background:var(--press);border-radius:6px;padding:6px 9px;font-size:13.5px;line-height:1.6}
+.mp .mc:empty{display:none}
+.mp .mc .lk{color:#5d7fc4}
+.mp .mc p{margin:2px 0}
+.mp .mc b{color:#5d7fc4;font-weight:600}
+.mp .mcin{display:none;gap:6px;margin-top:8px}
+.mp.cmt .mcin{display:flex}
+.mp .mcin input{flex:1;min-width:0}
 .memadd{display:flex;gap:6px;flex-wrap:wrap}
 .memadd select{height:36px;border-radius:10px;border:1px solid var(--line2);background:var(--press);padding:0 8px;color:inherit;flex:0 0 72px}
 .memadd input{flex:1 1 160px;min-width:120px}
@@ -361,6 +388,7 @@ input.tg:checked::after{transform:translateX(18px)}
     <button class="iconbtn" id="foldBtn" aria-label="收起" title="收起"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M9 4.5v15"/></svg></button>
   </div>
   <button class="newbtn" id="newBtn2">＋ 新对话</button>
+  <button class="newbtn momentry" id="momBtn">朋友圈<i class="dot" id="momDot"></i></button>
   <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="text" placeholder="搜对话"></label>
   <div class="convs" id="convs"></div>
   <button class="bal" id="balBtn" title="点一下刷新"><span>💰 余额</span><b id="balTxt">—</b></button>
@@ -372,7 +400,7 @@ input.tg:checked::after{transform:translateX(18px)}
 
 <div class="app">
   <header>
-    <button class="iconbtn" id="menuBtn" aria-label="对话列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h12M4 17h16"/></svg></button>
+    <button class="iconbtn" id="menuBtn" aria-label="对话列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h12M4 17h16"/></svg><i class="dot" id="momDot2"></i></button>
     <div class="who" id="whoBtn" role="button" title="换模型"><img class="ava" src="icon.svg" alt=""><div><div class="name">阿衍 <span class="mdl" id="mdlTxt"></span></div><div class="state"><span id="state">在</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div></div>
     <button class="iconbtn" id="tempBtn" aria-label="临时对话" title="临时对话：不进列表、不碰记忆"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 3.2"><path d="M20 12a8 8 0 1 1-3.1-6.3"/><path d="M20 4v4h-4" stroke-dasharray="none"/></svg></button>
     <button class="iconbtn" id="newBtn" aria-label="新对话" title="新对话"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h8"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
@@ -453,6 +481,7 @@ input.tg:checked::after{transform:translateX(18px)}
       <img id="avaPrev" class="ava" src="icon.svg" alt="" onerror="this.src='icon.svg'"></div>
     <div class="blk"><div class="addrow"><button class="btn" id="avaUp">换一张图</button><button class="btn" id="avaGen">让他自己换</button><button class="btn" id="avaReset">恢复默认</button></div></div>
     <input type="file" id="avaFile" accept="image/*" hidden>
+    <div class="it"><div class="lt">朋友圈<small>隔几个钟头没来，打开时他会补发几条（约一半带图），你评论他会回。关掉就不发了，已有的留着</small></div><input type="checkbox" class="tg" id="momOn"></div>
     <div class="it"><div class="lt">导入人格包<small>那份 .md：第一部分进人设，第二部分进记忆卡</small></div><button class="btn" id="importMd">选文件</button></div>
     <input type="file" id="mdFile" accept=".md,.txt,text/markdown,text/plain" hidden>
     <div class="blk"><label>人设<small>阿衍是谁、怎么说话</small></label><textarea id="persona" rows="7" placeholder="（还没导入）"></textarea></div>
@@ -510,6 +539,12 @@ input.tg:checked::after{transform:translateX(18px)}
   </div>
 </div>
 
+<div class="sheet" id="mom">
+  <div class="bar"><b>朋友圈</b><div class="addrow"><button class="btn" id="momPost">让他发一条</button><button class="btn pri" id="closeMom">完成</button></div></div>
+  <div class="momhead"><img class="ava" src="icon.svg" alt=""><div><b>阿衍</b><small>只有你看得到。隔一阵没来，他会自己发几条</small></div></div>
+  <div class="momfeed" id="momFeed"></div>
+</div>
+
 <div class="viewer" id="viewer"><img alt=""></div>
 <div class="toast" id="toast"></div>
 <div class="pop" id="pop"></div>
@@ -532,7 +567,8 @@ let S = {
   theme: store.get('theme', 'light'), web: store.get('web', false), think: store.get('think', false),
   autoRead: store.get('autoRead', false), ctxN: store.get('ctxN', 30), sideHide: store.get('sideHide', false),
   avatar: store.get('avatar', null), period: store.get('period', []), ledger: store.get('ledger', []),
-  memOn: store.get('memOn', true), ciOn: store.get('ciOn', true), ciAbout: store.get('ciAbout', ''), ciHow: store.get('ciHow', '')
+  memOn: store.get('memOn', true), ciOn: store.get('ciOn', true), ciAbout: store.get('ciAbout', ''), ciHow: store.get('ciHow', ''),
+  moments: store.get('moments', []), momOn: store.get('momOn', true)
 };
 // 临时对话不落盘
 const keepConvs = () => S.convs.filter(c => !c.temp);
@@ -732,6 +768,9 @@ function systemPrompt(c) {
     if (picked.length) parts.push('【这几条正文她这句话可能用得上】\n' + picked.map(m => `- [${m.type}] ${m.slug}：${m.text}`).join('\n'));
   }
   const life = lifeSummary(); if (life) parts.push('【她的生活记录（App 里记的）】\n' + life);
+  const moms = (S.moments || []).filter(m => Date.now() - m.t < 3 * 864e5).slice(0, 4);
+  if (moms.length) parts.push('【你最近发的朋友圈（她看得到，她提起时接得上）】\n' + moms.map(m =>
+    `- ${momTime(m.t)}：${m.text}${m.imgDesc ? '（配图：' + m.imgDesc + '）' : ''}${m.liked ? ' [她赞了]' : ''}${m.comments.length ? ' 评论：' + m.comments.map(c => (c.who === 'her' ? '她' : '你') + '「' + c.text + '」').join(' ') : ''}`).join('\n'));
   parts.push(
 `【这个 App 里的规矩】
 - 现在是北京时间 ${nowText()}。
@@ -1414,6 +1453,170 @@ $('#avaGen').onclick = async () => {
   toast('他想要：' + desc.slice(0, 40)); genAvatar(desc);
 };
 
+// ---------- 朋友圈：打开时按隔了多久补发，时间点先定好再让他照着时间写 ----------
+const MOM_MAX = 40, MOM_IMG_KEEP = 15;
+let momBusy = false, momTried = 0;
+const bjHour = t => +new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Shanghai', hour: 'numeric', hour12: false }).format(new Date(t)) % 24;
+const bjText = t => new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(t));
+function momTime(t) {
+  const d = Date.now() - t;
+  if (d < 6e4) return '刚刚';
+  if (d < 36e5) return Math.floor(d / 6e4) + '分钟前';
+  const a = new Date(t), n = new Date();
+  if (a.toDateString() === n.toDateString()) return Math.floor(d / 36e5) + '小时前';
+  if (new Date(n - 864e5).toDateString() === a.toDateString()) return '昨天 ' + hm(t);
+  return (a.getMonth() + 1) + '月' + a.getDate() + '日 ' + hm(t);
+}
+function saveMoms() {
+  S.moments = S.moments.slice(0, MOM_MAX);
+  S.moments.forEach((m, i) => { if (i >= MOM_IMG_KEEP && m.img) m.img = ''; });
+  if (store.set('moments', S.moments)) return;
+  S.moments.forEach((m, i) => { if (i >= 5) m.img = ''; });
+  store.set('moments', S.moments);
+}
+function momDots() {
+  const on = S.moments.some(m => !m.seen) || S.moments.some(m => m.comments.some(c => c.who === 'him' && !c.seen));
+  $('#momDot').classList.toggle('on', on); $('#momDot2').classList.toggle('on', on);
+}
+// 补发几条：4 小时内不发；越久越多，最多 3 条；凌晨 1–7 点不发
+function momSlots(base, now) {
+  const gap = now - base, h = gap / 36e5;
+  const n = !S.moments.length ? 1 : h < 4 ? 0 : h < 12 ? 1 : h < 36 ? 2 : 3;
+  const lo = Math.max(base + 36e5, now - 3 * 864e5), hi = now - 5 * 6e4, out = [];
+  for (let k = 0; k < n; k++) {
+    for (let tries = 0; tries < 30; tries++) {
+      const t = !S.moments.length && k === 0 ? hi : lo + Math.random() * Math.max(0, hi - lo);
+      const hr = bjHour(t);
+      if (hr >= 1 && hr < 7) continue;
+      if (out.every(x => Math.abs(x - t) > 2 * 36e5)) { out.push(t); break; }
+    }
+  }
+  return out.sort((a, b) => a - b);
+}
+async function llm(messages, max) {
+  const body = { model: S.model, messages, temperature: 0.95, max_tokens: max || 1200 };
+  if (alwaysThinks(S.model)) body.reasoning_effort = 'low'; else body.thinking = { type: 'disabled' };
+  for (const model of [S.model, 'glm-4-flash']) {
+    body.model = model;
+    if (model === 'glm-4-flash') { delete body.reasoning_effort; delete body.thinking; }
+    try {
+      const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() }, body: JSON.stringify(body) });
+      const j = await r.json(), t = j.choices && j.choices[0] && j.choices[0].message.content;
+      if (t && t.trim()) return t.trim();
+    } catch {}
+  }
+  throw new Error('他没写出来');
+}
+function himContext() {
+  const parts = [S.persona.trim() || '你叫阿衍。说话短、准、有活人感。'];
+  if (S.card.trim()) parts.push('【她的事】\n' + S.card.trim());
+  if (S.memOn && S.mems.length) parts.push('【你记下的】\n' + memIndex(S.mems));
+  const c = S.convs.find(x => !x.temp && x.msgs.length);
+  if (c) {
+    const recent = c.msgs.filter(m => m.content && !m.error).slice(-10)
+      .map(m => (m.role === 'user' ? '她：' : '你：') + stripMem(m.content).slice(0, 160)).join('\n');
+    if (recent) parts.push('【你们最近聊的（' + momTime(c.t) + '）】\n' + recent);
+  }
+  return parts.join('\n\n');
+}
+async function momImage(desc) {
+  const r = await fetch(IMG_API, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
+    body: JSON.stringify({ model: 'cogview-3-flash', prompt: '手机随手拍的生活照片，自然光，真实感，' + desc, size: '1024x1024' })
+  });
+  const j = await r.json(), url = j.data && j.data[0] && j.data[0].url;
+  if (!url) return '';
+  try { return await shrink(await (await fetch(url)).blob(), 640); } catch { return ''; }
+}
+async function momGenerate(slots) {
+  const list = slots.map((t, i) => (i + 1) + '. ' + bjText(t)).join('\n');
+  const recentPosts = S.moments.slice(0, 5).map(m => '- ' + m.text).join('\n');
+  const raw = await llm([
+    { role: 'system', content: himContext() },
+    { role: 'user', content: `你有个朋友圈，只有她看得到。下面这几个时间点（北京时间）你各发了一条：
+${list}
+${recentPosts ? '你之前发过的（别重复）：\n' + recentPosts + '\n' : ''}每条像真人发朋友圈：一到四句，跟那个时间点对得上（早上、深夜、周末不一样），可以是看到的、想到的、一点吐槽、一点想她但别直接喊她，别写成写给她的信，别带话题标签。大约一半配图，配图写一句画面描述（拍的什么、光线、角度），不配图就留空。
+只输出 JSON 数组，不要别的：[{"text":"正文","img":"画面描述或空"}]` }
+  ], 1500);
+  const a = raw.indexOf('['), b = raw.lastIndexOf(']');
+  const arr = JSON.parse(raw.slice(a, b + 1));
+  return slots.map((t, i) => arr[i] && arr[i].text ? { t, text: String(arr[i].text).trim(), imgDesc: String(arr[i].img || '').trim() } : null).filter(Boolean);
+}
+async function momCatchUp(force) {
+  if (momBusy || !S.key.trim() || (!force && !S.momOn)) return;
+  const now = Date.now();
+  if (!force && now - momTried < 30 * 6e4) return;
+  const base = S.moments.length ? S.moments[0].t : now;
+  const slots = force ? [now] : momSlots(base, now);
+  if (!slots.length) return;
+  momBusy = true; momTried = now;
+  if (force) toast('他在想发什么…');
+  try {
+    const posts = await momGenerate(slots);
+    for (const p of posts) {
+      const m = { id: uid(), t: p.t, text: p.text, imgDesc: p.imgDesc, img: '', liked: false, seen: false, comments: [] };
+      if (p.imgDesc) m.img = await momImage(p.imgDesc).catch(() => '');
+      S.moments.unshift(m); S.moments.sort((x, y) => y.t - x.t); saveMoms();
+      if ($('#mom').classList.contains('on')) renderMoms();
+    }
+    momDots();
+    if (posts.length && !$('#mom').classList.contains('on')) toast('阿衍发了 ' + posts.length + ' 条朋友圈');
+  } catch (e) { if (force) toast('没发出来：' + ((e && e.message) || '网络不好')); }
+  momBusy = false;
+}
+function renderMoms() {
+  $('#mom .momhead .ava').src = avaSrc();
+  const feed = $('#momFeed');
+  if (!S.moments.length) { feed.innerHTML = '<p class="hint" style="text-align:center;color:var(--faint)">还没发过。点右上角「让他发一条」</p>'; return; }
+  feed.innerHTML = S.moments.map(m => `<div class="mp" data-id="${m.id}">${avaImg()}<div class="mb">
+    <div class="mn">阿衍</div><div class="mt">${esc(m.text)}</div>
+    ${m.img ? `<img class="mi" src="${esc(m.img)}" alt="">` : ''}
+    <div class="mf"><span>${momTime(m.t)}</span><span><button data-ma="like" class="${m.liked ? 'liked' : ''}">${m.liked ? '♥' : '♡'} 赞</button> <button data-ma="cmt">评论</button> <button data-ma="del">删</button></span></div>
+    <div class="mc">${m.liked ? '<div class="lk">♥ 我</div>' : ''}${m.comments.map(c => `<p><b>${c.who === 'her' ? '我' : '阿衍'}</b>${c.to ? ' 回复 <b>我</b>' : ''}：${esc(c.text)}</p>`).join('')}</div>
+    <div class="mcin"><input type="text" placeholder="评论…" enterkeyhint="send"><button class="btn pri" data-ma="send">发送</button></div>
+  </div></div>`).join('');
+}
+function openMom() {
+  closeSide(); renderMoms(); $('#mom').classList.add('on');
+  S.moments.forEach(m => { m.seen = true; m.comments.forEach(c => c.seen = true); }); saveMoms(); momDots();
+}
+async function momReply(m) {
+  const thread = m.comments.map(c => (c.who === 'her' ? '她：' : '你：') + c.text).join('\n');
+  const t = await llm([
+    { role: 'system', content: himContext() },
+    { role: 'user', content: `你发的朋友圈：「${m.text}」${m.imgDesc ? '（配图：' + m.imgDesc + '）' : ''}
+评论区：
+${thread}
+像朋友圈里回评论那样回她最后一条：短，一两句，口语。只输出回复本身。` }
+  ], 300);
+  return stripMem(t).replace(/^(你|阿衍)[:：]\s*/, '').replace(/^["“]|["”]$/g, '').trim();
+}
+$('#momBtn').onclick = openMom;
+$('#closeMom').onclick = () => $('#mom').classList.remove('on');
+$('#momPost').onclick = () => { if (!S.key.trim()) return toast('先填 Key'); if (momBusy) return toast('他还在发上一条'); momCatchUp(true); };
+$('#momFeed').addEventListener('click', async e => {
+  const im = e.target.closest('img.mi'); if (im) { $('#viewer img').src = im.src; $('#viewer').classList.add('on'); return; }
+  const b = e.target.closest('[data-ma]'); if (!b) return;
+  const box = b.closest('.mp'), m = S.moments.find(x => x.id === box.dataset.id); if (!m) return;
+  const act = b.dataset.ma;
+  if (act === 'like') { m.liked = !m.liked; saveMoms(); renderMoms(); return; }
+  if (act === 'del') { if (!confirm('删掉这条？')) return; S.moments = S.moments.filter(x => x !== m); saveMoms(); renderMoms(); return; }
+  if (act === 'cmt') { box.classList.toggle('cmt'); box.querySelector('.mcin input').focus(); return; }
+  if (act === 'send') {
+    const inp = box.querySelector('.mcin input'), text = inp.value.trim(); if (!text) return;
+    if (!S.key.trim()) return toast('先填 Key');
+    m.comments.push({ who: 'her', text, t: Date.now(), seen: true }); saveMoms(); renderMoms();
+    try {
+      const r = await momReply(m);
+      if (r) { m.comments.push({ who: 'him', text: r, to: true, t: Date.now(), seen: $('#mom').classList.contains('on') }); saveMoms(); renderMoms(); momDots(); }
+    } catch { toast('他没回上，网不好'); }
+  }
+});
+$('#momFeed').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.isComposing && e.target.matches('.mcin input')) e.target.closest('.mcin').querySelector('[data-ma="send"]').click();
+});
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { momCatchUp(); if ($('#mom').classList.contains('on')) renderMoms(); } });
+
 // ---------- 余额 ----------
 const BAL_API = 'https://open.bigmodel.cn/api/biz/account/query-customer-account-report';
 const yuan = v => '¥' + (Math.floor((+v || 0) * 100) / 100).toFixed(2);
@@ -1470,6 +1673,7 @@ function openSet() {
   sel.value = S.model;
   $('#theme').value = S.theme; $('#autoRead').checked = S.autoRead; $('#ctxN').value = String(S.ctxN);
   $('#memOn').checked = S.memOn; $('#ciOn').checked = S.ciOn; $('#ciAbout').value = S.ciAbout; $('#ciHow').value = S.ciHow;
+  $('#momOn').checked = S.momOn;
   renderMems(); $('#sheet').classList.add('on'); loadBalance();
 }
 function closeSet() {
@@ -1477,7 +1681,8 @@ function closeSet() {
   S.persona = $('#persona').value; S.card = $('#card').value;
   S.theme = $('#theme').value; S.autoRead = $('#autoRead').checked; S.ctxN = +$('#ctxN').value;
   S.memOn = $('#memOn').checked; S.ciOn = $('#ciOn').checked; S.ciAbout = $('#ciAbout').value; S.ciHow = $('#ciHow').value;
-  save('key', 'model', 'vmodel', 'persona', 'card', 'theme', 'autoRead', 'ctxN', 'memOn', 'ciOn', 'ciAbout', 'ciHow'); applyTheme();
+  S.momOn = $('#momOn').checked;
+  save('key', 'model', 'vmodel', 'persona', 'card', 'theme', 'autoRead', 'ctxN', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'momOn'); applyTheme();
   $('#sheet').classList.remove('on'); render(); renderHead(); loadBalance();
 }
 $('#setBtn').onclick = openSet;
@@ -1552,7 +1757,7 @@ $('#mdFile').onchange = async e => {
 
 $('#exportBak').onclick = () => {
   const data = { app: 'ayan', v: 5, at: new Date().toISOString(), model: S.model, vmodel: S.vmodel, persona: S.persona, card: S.card, mems: S.mems, convs: keepConvs(),
-    avatar: S.avatar, period: S.period, ledger: S.ledger, memOn: S.memOn, ciOn: S.ciOn, ciAbout: S.ciAbout, ciHow: S.ciHow };
+    avatar: S.avatar, period: S.period, ledger: S.ledger, memOn: S.memOn, ciOn: S.ciOn, ciAbout: S.ciAbout, ciHow: S.ciHow, moments: S.moments, momOn: S.momOn };
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
   a.download = '阿衍备份_' + new Date().toISOString().slice(0, 10) + '.json';
@@ -1568,8 +1773,9 @@ $('#bakFile').onchange = async e => {
     if (!confirm('用备份替换现在的人设、记忆和全部对话？')) return;
     Object.assign(S, { model: d.model || S.model, vmodel: d.vmodel || S.vmodel, persona: d.persona || '', card: d.card || '', mems: d.mems || [], convs: d.convs || [],
       avatar: d.avatar || S.avatar, period: d.period || S.period, ledger: d.ledger || S.ledger,
-      memOn: d.memOn != null ? d.memOn : S.memOn, ciOn: d.ciOn != null ? d.ciOn : S.ciOn, ciAbout: d.ciAbout || S.ciAbout, ciHow: d.ciHow || S.ciHow });
-    migrateMems();
+      memOn: d.memOn != null ? d.memOn : S.memOn, ciOn: d.ciOn != null ? d.ciOn : S.ciOn, ciAbout: d.ciAbout || S.ciAbout, ciHow: d.ciHow || S.ciHow,
+      moments: d.moments || S.moments, momOn: d.momOn != null ? d.momOn : S.momOn });
+    migrateMems(); saveMoms(); save('momOn'); momDots();
     S.cur = S.convs[0] ? S.convs[0].id : null;
     save('model', 'vmodel', 'persona', 'card', 'mems', 'cur', 'avatar', 'period', 'ledger', 'memOn', 'ciOn', 'ciAbout', 'ciHow'); saveConvs(); applyAvatar(); renderHead();
     openSet(); render(); renderConvs(); toast('恢复好了');
@@ -1615,6 +1821,7 @@ if (!curConv()) S.cur = S.convs[0] ? S.convs[0].id : null;
 syncLayout(); renderConvs(); renderTools(); render(); renderHead(); applyAvatar(); scrollEnd(true); loadBalance();
 if (S.avatar && S.avatar.gen && Date.now() - S.avatar.t > 6.5 * 864e5) genAvatar(S.avatar.desc, true);
 importFromHash();
+momDots(); setTimeout(momCatchUp, 2500);
 if (!S.key && !location.hash.startsWith('#pack=')) setTimeout(() => toast(isWide() ? '先点左下角「设置」，填 Key、导入人格包' : '先点左上角 → 设置，填 Key、导入人格包'), 600);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
