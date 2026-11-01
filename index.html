@@ -376,6 +376,24 @@ input.tg:checked::after{transform:translateX(18px)}
 .lg.per{background:#ff6f8f}.lg.pred{border:1.5px dashed #ff8fa8}.lg.fert{background:rgba(168,128,232,.3)}.lg.ov{background:#a880e8}
 /* 临时对话 */
 .tempbar{max-width:780px;margin:0 auto 6px;font-size:12.5px;color:var(--muted);text-align:center;padding:6px 12px;border:1px dashed var(--line2);border-radius:12px}
+/* 群聊 */
+.siderow{display:flex;gap:8px}
+.siderow .newbtn{flex:1}
+.who{position:relative}
+.msg .wn{font-size:12px;color:var(--muted);margin:0 0 2px;letter-spacing:.04em}
+.grpavas{display:flex;justify-content:center;margin:0 auto 16px}
+.grpavas .ava{width:56px;height:56px;margin:0 -6px;border:3px solid var(--bg);box-shadow:none}
+.chars{display:flex;flex-direction:column;gap:2px;margin:6px 0 10px}
+.chr{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px dashed var(--line);font-size:14.5px}
+.chr input[type=checkbox]{width:20px;height:20px;accent-color:#5d7fc4;flex:none;margin:0}
+.chr .ava{width:36px;height:36px}
+.chr span{flex:1;min-width:0}
+.chr small{display:block;color:var(--faint);font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.chr button{color:var(--muted);font-size:13px;padding:4px 8px}
+#charAva{width:64px;height:64px}
+.chared .row{align-items:center}
+.contbtn{display:block;margin:10px auto 0;font-size:13px;color:var(--muted);border:1px solid var(--line2);border-radius:16px;padding:5px 14px}
+.contbtn:hover{color:var(--silver)}
 </style>
 </head>
 <body>
@@ -388,7 +406,7 @@ input.tg:checked::after{transform:translateX(18px)}
     <button class="iconbtn" id="foldBtn" aria-label="收起" title="收起"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M9 4.5v15"/></svg></button>
   </div>
   <button class="newbtn" id="newBtn2">＋ 新对话</button>
-  <button class="newbtn momentry" id="momBtn">朋友圈<i class="dot" id="momDot"></i></button>
+  <div class="siderow"><button class="newbtn momentry" id="momBtn">朋友圈<i class="dot" id="momDot"></i></button><button class="newbtn" id="grpBtn">👥 群聊</button></div>
   <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="text" placeholder="搜对话"></label>
   <div class="convs" id="convs"></div>
   <button class="bal" id="balBtn" title="点一下刷新"><span>💰 余额</span><b id="balTxt">—</b></button>
@@ -401,7 +419,7 @@ input.tg:checked::after{transform:translateX(18px)}
 <div class="app">
   <header>
     <button class="iconbtn" id="menuBtn" aria-label="对话列表"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h12M4 17h16"/></svg><i class="dot" id="momDot2"></i></button>
-    <div class="who" id="whoBtn" role="button" title="换模型"><img class="ava" src="icon.svg" alt=""><div><div class="name">阿衍 <span class="mdl" id="mdlTxt"></span></div><div class="state"><span id="state">在</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div></div>
+    <div class="who" id="whoBtn" role="button" title="换模型"><img class="ava" src="icon.svg" alt=""><div><div class="name"><span id="whoName">阿衍</span> <span class="mdl" id="mdlTxt"></span></div><div class="state"><span id="state">在</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div></div></div>
     <button class="iconbtn" id="tempBtn" aria-label="临时对话" title="临时对话：不进列表、不碰记忆"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 3.2"><path d="M20 12a8 8 0 1 1-3.1-6.3"/><path d="M20 4v4h-4" stroke-dasharray="none"/></svg></button>
     <button class="iconbtn" id="newBtn" aria-label="新对话" title="新对话"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h8"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
   </header>
@@ -496,7 +514,7 @@ input.tg:checked::after{transform:translateX(18px)}
    </section>
 
    <section data-pane="data">
-    <div class="it"><div class="lt">导出备份<small>人设、记忆、所有对话、记账和经期（不含 Key）。换设备、清缓存之前导一份</small></div><button class="btn" id="exportBak">导出</button></div>
+    <div class="it"><div class="lt">导出备份<small>人设、记忆、所有对话和群聊角色、记账和经期（不含 Key）。换设备、清缓存之前导一份</small></div><button class="btn" id="exportBak">导出</button></div>
     <div class="it"><div class="lt">从备份恢复<small>会替换现在的人设、记忆和全部对话</small></div><button class="btn" id="importBak">选文件</button></div>
     <input type="file" id="bakFile" accept=".json,application/json" hidden>
     <div class="it"><div class="lt">手机和电脑同步<small>现在还不同步：各存各的。想搬就在一边导出、另一边恢复</small></div></div>
@@ -545,6 +563,29 @@ input.tg:checked::after{transform:translateX(18px)}
   <div class="momfeed" id="momFeed"></div>
 </div>
 
+<div class="sheet" id="grp">
+  <div class="bar"><b id="grpTtl">新群聊</b><div class="addrow"><button class="btn" id="grpCancel">取消</button><button class="btn pri" id="grpOk">建群</button></div></div>
+  <div class="sec">
+    <label class="lb">群名</label><input type="text" id="grpName" placeholder="比如：深夜食堂">
+    <label class="lb">你在群里叫什么（他们这么叫你，空着就叫「她」）</label><input type="text" id="myName" placeholder="比如：乔">
+  </div>
+  <div class="sec">
+    <h3>拉谁进群</h3>
+    <p class="hint">角色你自己捏：名字、是谁、怎么说话。没点名就轮着说，跟自己没关系的会憋着不说；点了谁的名字谁就回。</p>
+    <div class="chars" id="grpMembers"></div>
+    <button class="btn" id="charNew">＋ 新角色</button>
+  </div>
+  <div class="sec chared" id="charEd" hidden>
+    <h3 id="charEdTtl">新角色</h3>
+    <div class="row"><img id="charAva" class="ava cava" src="icon.svg" alt=""><button class="btn" id="charAvaUp">换图</button><button class="btn" id="charAvaGen">照人设画一个</button></div>
+    <input type="file" id="charAvaFile" accept="image/*" hidden>
+    <label class="lb">名字</label><input type="text" id="charName" placeholder="比如：小满">
+    <label class="lb">人设（是谁、什么性格、怎么说话、跟你什么关系）</label>
+    <textarea id="charPersona" placeholder="比如：你叫小满，二十出头，在隔壁开奶茶店，嘴碎爱八卦，说话带点合肥口音，跟她是老邻居。"></textarea>
+    <div class="row"><button class="btn pri" id="charSave">存</button><button class="btn" id="charCancel">取消</button><button class="btn danger" id="charDel">删掉这个角色</button></div>
+  </div>
+</div>
+
 <div class="viewer" id="viewer"><img alt=""></div>
 <div class="toast" id="toast"></div>
 <div class="pop" id="pop"></div>
@@ -568,7 +609,8 @@ let S = {
   autoRead: store.get('autoRead', false), ctxN: store.get('ctxN', 30), sideHide: store.get('sideHide', false),
   avatar: store.get('avatar', null), period: store.get('period', []), ledger: store.get('ledger', []),
   memOn: store.get('memOn', true), ciOn: store.get('ciOn', true), ciAbout: store.get('ciAbout', ''), ciHow: store.get('ciHow', ''),
-  moments: store.get('moments', []), momOn: store.get('momOn', true)
+  moments: store.get('moments', []), momOn: store.get('momOn', true),
+  chars: store.get('chars', []), myName: store.get('myName', '')
 };
 // 临时对话不落盘
 const keepConvs = () => S.convs.filter(c => !c.temp);
@@ -802,12 +844,20 @@ function ensureConv() { if (!curConv()) newConv(); return curConv(); }
 // ---------- 渲染 ----------
 const avaSrc = () => (S.avatar && S.avatar.src) || 'icon.svg';
 const avaImg = () => `<img class="ava" src="${esc(avaSrc())}" alt="" onerror="this.onerror=null;this.src='icon.svg'">`;
-function applyAvatar() { document.querySelectorAll('img.ava').forEach(i => { i.onerror = () => { i.onerror = null; i.src = 'icon.svg'; }; i.src = avaSrc(); }); }
+function applyAvatar() { document.querySelectorAll('img.ava:not(.cava)').forEach(i => { i.onerror = () => { i.onerror = null; i.src = 'icon.svg'; }; i.src = avaSrc(); }); }
 const STARTERS = ['在吗', '今天店里怎么样', '陪我待一会儿', '帮我想想晚上吃什么'];
+const GROUP_STARTERS = ['都在吗', '今天谁有空陪我聊', '你们互相认识一下'];
 let editing = -1;
 function render() {
   const c = curConv(), list = $('#list');
   const tempBar = c && c.temp ? '<div class="tempbar">临时对话：不进对话列表，不用也不改记忆，离开就没了</div>' : '';
+  if (c && c.group && !c.msgs.length) {
+    const mem = liveMembers(c);
+    list.innerHTML = `<div class="empty"><div class="grpavas">${mem.slice(0, 6).map(id => whoImg(id)).join('')}</div><h1>${esc(c.title || '群聊')}</h1>
+      <p>${mem.length ? esc(mem.map(nameOf).join('、')) + ' 都在。说句话，或者点名叫谁' : '群里还没人，点对话列表里的 ⋯ 拉人'}</p>
+      ${S.key && mem.length ? `<div class="starters">${GROUP_STARTERS.map(s => `<button data-start="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : ''}</div>`;
+    return;
+  }
   if (!c || !c.msgs.length) {
     list.innerHTML = `<div class="empty">${avaImg()}<h1>${c && c.temp ? '临时对话' : '阿衍'}</h1><p>${!S.key ? '先去设置里填智谱 Key，再导入人格包。' : c && c.temp ? '这段聊完就没了，他也不会记。' : '在。'}</p>
       ${S.key ? `<div class="starters">${STARTERS.map(s => `<button data-start="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : ''}</div>`;
@@ -836,8 +886,9 @@ function render() {
       + (m.notes || []).map(n => `<div class="memo">${esc(n)}</div>`).join('');
     const acts = live ? '' : `${m.content ? `<button data-act="read" data-i="${i}">读</button>` : ''}<button data-act="copy" data-i="${i}">复制</button>${i === lastAi ? `<button data-act="redo" data-i="${i}">重说</button>` : ''}<button data-act="del" data-i="${i}">删除</button>`;
     const via = m.via ? `<span title="原来的模型人太多，自动换了">via ${esc(m.via)}</span>` : '';
+    if (c.group) return h + `<div class="msg ai">${whoImg(m.who, m.name)}<div class="col"><div class="wn">${esc(nameOf(m.who, m.name))}</div>${body}</div></div>${memo}<div class="meta">${tm}${via}${acts}</div>`;
     return h + `<div class="msg ai">${avaImg()}<div class="col">${body}</div></div>${memo}<div class="meta">${tm}${via}${acts}</div>`;
-  }).join('');
+  }).join('') + (c.group && !busy && liveMembers(c).length > 1 ? '<button class="contbtn" data-cont>让他们接着聊</button>' : '');
   if (editing >= 0) { const ta = $('#editTa'); if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } }
 }
 function scrollEnd(force) {
@@ -852,7 +903,7 @@ function renderConvs() {
   const rows = [...list.filter(c => c.pin), ...list.filter(c => !c.pin)].map(c => {
     const g = c.pin ? '置顶' : dayLabel(c.t);
     const head = g !== lastG ? `<div class="grp">${g}</div>` : ''; lastG = g;
-    return head + `<div class="conv${c.id === S.cur ? ' on' : ''}" data-id="${c.id}"><span>${c.pin ? '<i class="pin">📌</i> ' : ''}${esc(c.title || '新对话')}</span><button class="more" data-more="${c.id}" aria-label="更多">⋯</button></div>`;
+    return head + `<div class="conv${c.id === S.cur ? ' on' : ''}" data-id="${c.id}"><span>${c.pin ? '<i class="pin">📌</i> ' : ''}${c.group ? '👥 ' : ''}${esc(c.title || '新对话')}</span><button class="more" data-more="${c.id}" aria-label="更多">⋯</button></div>`;
   }).join('');
   $('#convs').innerHTML = rows || `<p style="color:var(--faint);font-size:13px;padding:10px">${q ? '没搜到' : '还没有对话'}</p>`;
 }
@@ -872,7 +923,8 @@ function setBusy(b, st) {
   busy = b;
   $('#send').innerHTML = b ? STOP_ICON : SEND_ICON;
   $('#send').setAttribute('aria-label', b ? '停' : '发送');
-  $('#state').textContent = st || (b ? '正在输入…' : '在');
+  const c = curConv();
+  $('#state').textContent = st || (b ? '正在输入…' : c && c.group ? liveMembers(c).length + 1 + ' 人' : '在');
   updateSend();
 }
 function updateSend() { $('#send').disabled = !busy && (pendFiles.some(f => f.loading) || (!$('#input').value.trim() && !pending.length && !pendFiles.length)); }
@@ -924,6 +976,24 @@ async function ask(c) {
   if (S.web && !vision) body.tools = [{ type: 'web_search', web_search: { enable: true, search_result: true } }];
   if (S.web) setBusy(true, '在查…');
   ctrl = new AbortController();
+  await streamInto(body, tries, bot, vision);
+  if (bot.content) {
+    const got = takeMems(bot.content, c); if (got.length) bot.saved = got;
+    const notes = takeTags(bot.content); if (notes.length) bot.notes = notes;
+    // 换头像：他写了暗号就照他的画；没写但她明明让他换了，就替他想一个
+    const av = bot.content.match(/\[\[\s*换头像\s*[|｜]([^\]]+)\]\]/);
+    const lastU = [...c.msgs].reverse().find(m => m.role === 'user');
+    const asked = lastU && /(换|改|画|弄).{0,8}头像|头像.{0,8}(换|改|画)/.test(lastU.content || '');
+    if (av || asked) setTimeout(() => avatarInChat(c, bot, av ? av[1].trim() : '', lastU && lastU.content), 0);
+  }
+  c.t = Date.now(); ctrl = null;
+  saveConvs(); setBusy(false); render(); scrollEnd(); renderConvs();
+  if (bot.content) setTimeout(loadBalance, 1500);
+  if (bot.content && S.autoRead) speak(stripMem(bot.content));
+}
+// 发请求、边收边画；出错写进 bot.error。ctrl 由调用的人建
+async function streamInto(body, tries, bot, vision, who = '') {
+  const first = body.model;
   let raf = 0;
   const paint = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; render(); scrollEnd(); }); };
   try {
@@ -957,8 +1027,8 @@ async function ask(c) {
         try {
           const j = JSON.parse(data), d = j.choices?.[0]?.delta;
           if (j.web_search && j.web_search.length) bot.sources = j.web_search;
-          if (d && d.reasoning_content) { bot.reasoning = (bot.reasoning || '') + d.reasoning_content; $('#state').textContent = '在想…'; paint(); }
-          if (d && d.content) { bot.content += d.content; $('#state').textContent = '正在输入…'; paint(); }
+          if (d && d.reasoning_content) { bot.reasoning = (bot.reasoning || '') + d.reasoning_content; $('#state').textContent = who + '在想…'; paint(); }
+          if (d && d.content) { bot.content += d.content; $('#state').textContent = who + '正在输入…'; paint(); }
         } catch {}
       }
     }
@@ -967,20 +1037,121 @@ async function ask(c) {
     if (e.name === 'AbortError') { if (!bot.content) bot.error = '停了。'; }
     else bot.error = e.shown ? e.message : '连不上智谱。看看网络；智谱是国内的，不开梯子也能用。';
   }
-  if (bot.content) {
-    const got = takeMems(bot.content, c); if (got.length) bot.saved = got;
-    const notes = takeTags(bot.content); if (notes.length) bot.notes = notes;
-    // 换头像：他写了暗号就照他的画；没写但她明明让他换了，就替他想一个
-    const av = bot.content.match(/\[\[\s*换头像\s*[|｜]([^\]]+)\]\]/);
-    const lastU = [...c.msgs].reverse().find(m => m.role === 'user');
-    const asked = lastU && /(换|改|画|弄).{0,8}头像|头像.{0,8}(换|改|画)/.test(lastU.content || '');
-    if (av || asked) setTimeout(() => avatarInChat(c, bot, av ? av[1].trim() : '', lastU && lastU.content), 0);
+}
+
+// ---------- 群聊：她自己捏角色拉进群；每个人轮着说，看得到前面的人说了什么 ----------
+const AYAN = 'ayan';
+const charById = id => S.chars.find(x => x.id === id);
+// fb：消息里存的名字，角色删了也认得出是谁说的
+const nameOf = (id, fb) => id === AYAN ? '阿衍' : (charById(id) || {}).name || fb || '（走了的人）';
+const herName = () => S.myName.trim() || '她';
+// 没传头像的角色：名字第一个字画在色块上
+const CHAR_COLORS = ['#e8a87c', '#85b8cb', '#c38d9e', '#8fbc8f', '#b39ddb', '#e6b450', '#7fa7d9', '#d98880'];
+function letterAva(ch) {
+  const name = (ch && ch.name || '?').trim(), col = CHAR_COLORS[[...name].reduce((a, x) => a + x.codePointAt(0), 0) % CHAR_COLORS.length];
+  return 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="${col}"/><text x="32" y="42" font-size="28" text-anchor="middle" fill="#fff" font-family="sans-serif">${esc([...name][0] || '?')}</text></svg>`);
+}
+const charSrc = (id, fb) => id === AYAN ? avaSrc() : (charById(id) && charById(id).avatar) || letterAva({ name: nameOf(id, fb) });
+const whoImg = (id, fb) => id === AYAN ? avaImg() : `<img class="ava cava" src="${esc(charSrc(id, fb))}" alt="">`;
+const liveMembers = c => c.group.members.filter(id => id === AYAN || charById(id));
+
+// 谁来说：点了名的按点名顺序；没点名就全员打乱轮一遍（不想说的会跳过）
+function pickSpeakers(c, text) {
+  const mem = liveMembers(c);
+  const named = mem.filter(id => text && text.includes(nameOf(id))).sort((a, b) => text.indexOf(nameOf(a)) - text.indexOf(nameOf(b)));
+  if (named.length) return { list: named, named };
+  const list = mem.slice();
+  for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; }
+  return { list, named: [] };
+}
+function groupPrompt(c, id, named, quiet) {
+  const others = liveMembers(c).filter(x => x !== id).map(nameOf);
+  const me = nameOf(id), ch = charById(id);
+  const parts = [];
+  if (id === AYAN) parts.push(systemPrompt(c));
+  else {
+    parts.push((ch.persona || '').trim() || `你叫${me}。`);
+    if (S.ciOn && S.ciAbout.trim()) parts.push('【她想让大家知道的（她自己写的）】\n' + S.ciAbout.trim());
+    parts.push('现在是北京时间 ' + nowText() + '。');
   }
+  parts.push(`【现在是群聊】
+- 群名「${c.title || '群聊'}」。群里有：${herName()}（建群的人）${others.length ? '、' + others.join('、') : ''}，还有你${me}。
+- 聊天记录里「名字：话」是别人说的；你只说你${me}自己的话，别替别人说，开头别写自己名字。
+- 像微信群里那样：短、口语、一到三句；可以接别人的话、跟别人抬杠，别把别人说过的再说一遍。
+- ${named.includes(id) ? `她点了你的名，要回。` : quiet ? `她这会儿没说话，是你们在接着聊。有想说的就说，没有就只回 [[跳过]]。` : `这句跟你关系不大、或者别人已经说到了，就只回 [[跳过]]（她看不到这行，等于你没吭声）。`}`);
+  return parts.join('\n\n');
+}
+// 群聊记录 → API 格式：自己的话是 assistant，别人的话（她和其他角色）并进 user，前面带名字
+function groupHistory(c, id, vision) {
+  const hist = c.msgs.filter(m => !m.error && (m.content || (m.images && m.images.length) || (m.files && m.files.length))).slice(-S.ctxN);
+  const lastU = [...hist].reverse().find(m => m.role === 'user');
+  const out = [];
+  const push = (role, content) => {
+    const p = out[out.length - 1];
+    if (p && p.role === role && typeof p.content === 'string' && typeof content === 'string') p.content += '\n' + content;
+    else out.push({ role, content });
+  };
+  hist.forEach((m, k) => {
+    if (m.role === 'assistant') {
+      const t = stripMem(m.content); if (!t) return;
+      if (m.who === id) push('assistant', t); else push('user', nameOf(m.who, m.name) + '：' + t);
+      return;
+    }
+    const a = toApi(m, vision && m === lastU, k >= hist.length - 6);
+    if (typeof a.content === 'string') push('user', herName() + '：' + a.content);
+    else { a.content[a.content.length - 1].text = herName() + '：' + a.content[a.content.length - 1].text; out.push(a); }
+  });
+  if (!out.length || out[out.length - 1].role === 'assistant') push('user', '（群里安静了一会儿）');
+  return out;
+}
+// 去掉跳过标记；模型顺手替别人说的那几行砍掉
+function cleanGroup(t, c, id) {
+  let s = (t || '').replace(/^\s*[【\[]?\s*/, '').replace(new RegExp('^' + nameOf(id) + '\\s*[】\\]]?\\s*[:：]\\s*'), '');
+  const names = [herName(), '她', ...liveMembers(c).filter(x => x !== id).map(nameOf)].map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const cut = s.search(new RegExp('\\n\\s*[【\\[]?(' + names.join('|') + ')[】\\]]?\\s*[:：]'));
+  if (cut > 0) s = s.slice(0, cut);
+  return s.trim();
+}
+const isSkip = t => !stripMem(t).replace(/\[\[\s*跳过\s*\]\]/g, '').replace(/[\s（）()。.…]/g, '');
+async function askGroup(c, quiet) {
+  const lastU = [...c.msgs].reverse().find(m => m.role === 'user');
+  const { list, named } = pickSpeakers(c, quiet ? '' : lastU && lastU.content);
+  if (!list.length) return toast('群里没人了，点 ⋯ 拉人进来');
+  const vision = !quiet && !!(lastU && lastU.images && lastU.images.length && c.msgs[c.msgs.length - 1] === lastU);
+  ctrl = new AbortController();
+  setBusy(true);
+  let said = 0;
+  for (const id of list) {
+    if (ctrl.signal.aborted) break;
+    $('#state').textContent = nameOf(id) + ' 正在输入…';
+    const bot = { role: 'assistant', who: id, name: nameOf(id), content: '', t: Date.now() };
+    c.msgs.push(bot); render(); scrollEnd(true);
+    const first = vision ? (S.vmodel.trim() || 'glm-4v-flash') : S.model;
+    const free = vision ? ['glm-4v-flash', 'glm-4.1v-thinking-flash'] : ['glm-4.7-flash', 'glm-4.5-flash', 'glm-4-flash'];
+    // 刚推进去的空 bot 不算历史
+    const body = {
+      model: first, stream: true, temperature: 0.95,
+      messages: [{ role: 'system', content: groupPrompt(c, id, named, quiet) }, ...groupHistory({ ...c, msgs: c.msgs.slice(0, -1) }, id, vision)]
+    };
+    if (!vision) { if (alwaysThinks(first)) body.reasoning_effort = S.think ? 'high' : 'low'; else body.thinking = { type: S.think ? 'enabled' : 'disabled' }; }
+    if (S.web && !vision) body.tools = [{ type: 'web_search', web_search: { enable: true, search_result: true } }];
+    await streamInto(body, /-flash$/.test(first) ? [first, ...free.filter(m => m !== first)] : [first], bot, vision, nameOf(id) + ' ');
+    if (bot.error && bot.error !== '停了。' && !bot.content) { bot.error = nameOf(id) + '：' + bot.error; break; }
+    if (!bot.content || isSkip(bot.content)) { c.msgs.splice(c.msgs.indexOf(bot), 1); render(); continue; }
+    bot.content = cleanGroup(bot.content, c, id);
+    if (id === AYAN) {
+      const got = takeMems(bot.content, c); if (got.length) bot.saved = got;
+      const notes = takeTags(bot.content); if (notes.length) bot.notes = notes;
+    } else bot.content = stripMem(bot.content);
+    said++; render();
+    if (S.autoRead) speak(stripMem(bot.content));
+  }
+  if (!said && !ctrl.signal.aborted && !c.msgs.some(m => m.error && m === c.msgs[c.msgs.length - 1])) toast(quiet ? '没人接话' : '没人吭声，点名试试');
   c.t = Date.now(); ctrl = null;
   saveConvs(); setBusy(false); render(); scrollEnd(); renderConvs();
-  if (bot.content) setTimeout(loadBalance, 1500);
-  if (bot.content && S.autoRead) speak(stripMem(bot.content));
+  if (said) setTimeout(loadBalance, 1500);
 }
+const reply = (c, quiet) => c.group ? askGroup(c, quiet) : ask(c);
 // 图片占地方：存不下时把旧对话里的图丢掉再存
 function saveConvs() {
   if (store.set('convs', keepConvs())) return;
@@ -1003,7 +1174,7 @@ function send(textArg) {
   if (!c.title) c.title = (text || (m.files ? m.files[0].name : '图片')).replace(/\s+/g, ' ').slice(0, 18);
   $('#input').value = ''; pending = []; pendFiles = []; grow(); renderTools();
   S.convs = [c, ...S.convs.filter(x => x !== c)];
-  ask(c);
+  reply(c);
 }
 
 // ---------- 文件：纯文本本地读；PDF/Word/Excel 交给智谱抽文字，抽完把那边的文件删掉 ----------
@@ -1129,6 +1300,7 @@ $('#plusBtn').onclick = e => {
 
 $('#list').addEventListener('click', e => {
   const st = e.target.closest('[data-start]'); if (st) return send(st.dataset.start);
+  if (e.target.closest('[data-cont]')) { if (busy) return; if (!S.key.trim()) return toast('先填 Key'); return reply(curConv(), true); }
   const cp = e.target.closest('[data-cp]');
   if (cp) { const t = cp.parentElement.querySelector('code').textContent; navigator.clipboard?.writeText(t).then(() => toast('复制了')); return; }
   const im = e.target.closest('img.att'); if (im) { $('#viewer img').src = im.src; $('#viewer').classList.add('on'); return; }
@@ -1139,13 +1311,16 @@ $('#list').addEventListener('click', e => {
     const t = stripMem(m.content || m.error || '');
     (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => toast('复制了'), () => toast('复制不了，长按文字自己选'));
   } else if (act === 'read') { speak(stripMem(m.content));
-  } else if (act === 'redo') { c.msgs.splice(i, 1); saveConvs(); ask(c);
+  } else if (act === 'redo') {
+    // 群聊：这一轮大家说的都撤掉重来
+    if (c.group) { while (c.msgs.length && c.msgs[c.msgs.length - 1].role === 'assistant') c.msgs.pop(); } else c.msgs.splice(i, 1);
+    saveConvs(); reply(c);
   } else if (act === 'del') { c.msgs.splice(i, 1); saveConvs(); render();
   } else if (act === 'edit') { editing = i; render();
   } else if (act === 'ecancel') { editing = -1; render();
   } else if (act === 'esave') {
     const t = $('#editTa').value.trim(); if (!t && !(m.images && m.images.length)) return;
-    m.content = t; m.t = Date.now(); c.msgs.splice(i + 1); editing = -1; saveConvs(); ask(c);
+    m.content = t; m.t = Date.now(); c.msgs.splice(i + 1); editing = -1; saveConvs(); reply(c);
   }
 });
 $('#viewer').onclick = () => $('#viewer').classList.remove('on');
@@ -1161,8 +1336,8 @@ $('#menuBtn').onclick = openSide;
 $('#foldBtn').onclick = () => { S.sideHide = true; save('sideHide'); syncLayout(); };
 $('#mask').onclick = closeSide;
 addEventListener('resize', syncLayout);
-$('#newBtn').onclick = () => { if (busy) return; const c = curConv(); if (c && !c.msgs.length && !c.temp) return toast('已经是新对话了'); newConv(); input.focus(); };
-$('#newBtn2').onclick = () => { if (busy) return; const c = curConv(); if (!(c && !c.msgs.length && !c.temp)) newConv(); closeSide(); input.focus(); };
+$('#newBtn').onclick = () => { if (busy) return; const c = curConv(); if (c && !c.msgs.length && !c.temp && !c.group) return toast('已经是新对话了'); newConv(); input.focus(); };
+$('#newBtn2').onclick = () => { if (busy) return; const c = curConv(); if (!(c && !c.msgs.length && !c.temp && !c.group)) newConv(); closeSide(); input.focus(); };
 $('#q').addEventListener('input', renderConvs);
 $('#convs').addEventListener('click', e => {
   if (busy) return toast('等阿衍说完');
@@ -1192,6 +1367,9 @@ function renderHead() {
   $('#mdlTxt').textContent = S.model;
   const c = curConv();
   $('#tempBtn').classList.toggle('on', !!(c && c.temp));
+  $('#whoName').textContent = c && c.group ? (c.title || '群聊') : '阿衍';
+  $('#input').placeholder = c && c.group ? '在群里说点什么，点名叫谁就写名字…' : '跟阿衍说点什么…';
+  if (!busy) $('#state').textContent = c && c.group ? liveMembers(c).length + 1 + ' 人' : '在';
 }
 $('#whoBtn').onclick = e => {
   if (pop.classList.contains('on')) return closePop();
@@ -1203,7 +1381,7 @@ $('#tempBtn').onclick = () => {
   if (busy) return;
   const c = curConv();
   if (c && c.temp) { newConv(); toast('回到普通对话'); return; }
-  if (c && !c.msgs.length) { c.temp = true; save('convs'); render(); renderConvs(); renderHead(); }
+  if (c && !c.msgs.length && !c.group) { c.temp = true; save('convs'); render(); renderConvs(); renderHead(); }
   else newConv(true);
   toast('临时对话：不进列表，不碰记忆');
 };
@@ -1212,9 +1390,10 @@ $('#tempBtn').onclick = () => {
 function convMenu(id, anchor) {
   const c = S.convs.find(x => x.id === id); if (!c) return;
   const share = navigator.share ? '<button data-v="share">📤 分享</button>' : '';
-  openPop(`<button data-v="pin">📌 ${c.pin ? '取消置顶' : '置顶'}</button><button data-v="rename">✏️ 改名</button>${share}<button data-v="copy">📋 复制全文</button><button data-v="dl">⬇️ 下载成文件</button><hr><button data-v="del" class="danger">🗑 删除</button>`,
+  openPop(`<button data-v="pin">📌 ${c.pin ? '取消置顶' : '置顶'}</button>${c.group ? '<button data-v="grp">👥 群成员</button>' : ''}<button data-v="rename">✏️ 改名</button>${share}<button data-v="copy">📋 复制全文</button><button data-v="dl">⬇️ 下载成文件</button><hr><button data-v="del" class="danger">🗑 删除</button>`,
     anchor, v => {
       if (v === 'pin') { c.pin = !c.pin; save('convs'); renderConvs(); toast(c.pin ? '置顶了' : '取消置顶了'); }
+      else if (v === 'grp') openGrp(c);
       else if (v === 'rename') { const t = prompt('改个名字', c.title || ''); if (t != null && t.trim()) { c.title = t.trim().slice(0, 40); save('convs'); renderConvs(); } }
       else if (v === 'share') navigator.share({ title: c.title || '和阿衍的对话', text: convText(c) }).catch(() => {});
       else if (v === 'copy') (navigator.clipboard ? navigator.clipboard.writeText(convText(c)) : Promise.reject()).then(() => toast('整段复制了'), () => toast('复制不了'));
@@ -1236,7 +1415,7 @@ function convText(c) {
   const out = ['# ' + (c.title || '和阿衍的对话'), ''];
   for (const m of c.msgs) {
     if (m.error) continue;
-    const who = m.role === 'user' ? '我' : '阿衍';
+    const who = m.role === 'user' ? '我' : c.group ? nameOf(m.who, m.name) : '阿衍';
     const extra = (m.images && m.images.length ? `[${m.images.length} 张图] ` : '') + (m.files || []).map(f => `[文件：${f.name}] `).join('');
     const body = m.role === 'user' ? m.content : stripMem(m.content);
     out.push(`**${who}**${m.t ? '（' + dayLabel(m.t) + ' ' + hm(m.t) + '）' : ''}：`, extra + (body || ''), '');
@@ -1617,6 +1796,95 @@ $('#momFeed').addEventListener('keydown', e => {
 });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { momCatchUp(); if ($('#mom').classList.contains('on')) renderMoms(); } });
 
+// ---------- 群聊：建群、拉人、捏角色 ----------
+let grpConv = null, grpSel = [], charEditing = null, charDraftAva = '';
+function renderGrpMembers() {
+  $('#grpMembers').innerHTML = [AYAN, ...S.chars.map(x => x.id)].map(id => {
+    const ch = charById(id);
+    const sub = id === AYAN ? '人设在 设置 → 阿衍' : (ch.persona || '').replace(/\s+/g, ' ').slice(0, 40) || '还没写人设';
+    return `<label class="chr"><input type="checkbox" data-pick="${id}"${grpSel.includes(id) ? ' checked' : ''}>${whoImg(id)}<span>${esc(nameOf(id))}<small>${esc(sub)}</small></span>${id === AYAN ? '' : `<button type="button" data-ce="${id}">改</button>`}</label>`;
+  }).join('');
+}
+function openGrp(c) {
+  closeSide(); grpConv = c || null;
+  grpSel = c ? liveMembers(c).slice() : [AYAN];
+  $('#grpTtl').textContent = c ? '群成员' : '新群聊';
+  $('#grpOk').textContent = c ? '存' : '建群';
+  $('#grpName').value = c ? c.title || '' : '';
+  $('#myName').value = S.myName;
+  closeCharEd(); renderGrpMembers(); $('#grp').classList.add('on');
+}
+$('#grpBtn').onclick = () => { if (busy) return toast('等说完'); openGrp(null); };
+$('#grpCancel').onclick = () => { closeCharEd(); $('#grp').classList.remove('on'); };
+$('#grpMembers').addEventListener('change', e => {
+  const b = e.target.closest('[data-pick]'); if (!b) return;
+  const id = b.dataset.pick; grpSel = grpSel.filter(x => x !== id); if (b.checked) grpSel.push(id);
+});
+$('#grpMembers').addEventListener('click', e => { const b = e.target.closest('[data-ce]'); if (!b) return; e.preventDefault(); openCharEd(charById(b.dataset.ce)); });
+$('#grpOk').onclick = () => {
+  if (!grpSel.length) return toast('至少拉一个人进来');
+  S.myName = $('#myName').value.trim(); save('myName');
+  const name = ($('#grpName').value.trim() || grpSel.slice(0, 3).map(id => nameOf(id)).join('、') + (grpSel.length > 3 ? '…' : '')).slice(0, 40);
+  if (grpConv) { grpConv.title = name; grpConv.group.members = grpSel.slice(); saveConvs(); }
+  else {
+    dropTemp();
+    const c = { id: uid(), title: name, t: Date.now(), msgs: [], group: { members: grpSel.slice() } };
+    S.convs.unshift(c); S.cur = c.id; save('convs', 'cur');
+  }
+  closeCharEd(); $('#grp').classList.remove('on'); editing = -1; render(); renderConvs(); renderHead(); scrollEnd(true);
+};
+function openCharEd(ch) {
+  charEditing = ch || null; charDraftAva = ch ? ch.avatar || '' : '';
+  $('#charEdTtl').textContent = ch ? '改角色：' + ch.name : '新角色';
+  $('#charName').value = ch ? ch.name : ''; $('#charPersona').value = ch ? ch.persona || '' : '';
+  $('#charDel').hidden = !ch;
+  $('#charAva').src = charDraftAva || letterAva({ name: $('#charName').value || '?' });
+  $('#charEd').hidden = false; $('#charEd').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function closeCharEd() { $('#charEd').hidden = true; charEditing = null; }
+$('#charNew').onclick = () => openCharEd(null);
+$('#charCancel').onclick = closeCharEd;
+$('#charName').addEventListener('input', () => { if (!charDraftAva) $('#charAva').src = letterAva({ name: $('#charName').value || '?' }); });
+$('#charAvaUp').onclick = () => $('#charAvaFile').click();
+$('#charAvaFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try { charDraftAva = await shrink(f, 256); $('#charAva').src = charDraftAva; } catch { toast('这张图读不了'); }
+};
+$('#charAvaGen').onclick = async () => {
+  if (!S.key.trim()) return toast('先填 Key');
+  const name = $('#charName').value.trim(), per = $('#charPersona').value.trim();
+  if (!name && !per) return toast('先写名字和人设');
+  toast('在画…');
+  try {
+    const desc = (await llm([{ role: 'user', content: `给这个角色画一张头像。名字：${name}\n人设：${per.slice(0, 600)}\n用一句话描述画面（画的是谁、长相或物件、画风、颜色），只输出这句描述。` }], 200)).replace(/^["“]|["”]$/g, '');
+    const r = await fetch(IMG_API, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
+      body: JSON.stringify({ model: 'cogview-3-flash', prompt: '头像，正方形构图，主体居中，' + desc, size: '1024x1024' })
+    });
+    const j = await r.json(), url = j.data && j.data[0] && j.data[0].url;
+    if (!url) throw new Error((j.error && j.error.message) || '没画出来');
+    const k = await keepLocal(url);
+    if (!k.local) throw new Error('画好了但图存不下来，关掉梯子再试');
+    charDraftAva = k.src; $('#charAva').src = k.src; toast('画好了，记得点「存」');
+  } catch (e) { toast('没画成：' + ((e && e.message) || '网络不好')); }
+};
+$('#charSave').onclick = () => {
+  const name = $('#charName').value.trim(), persona = $('#charPersona').value.trim();
+  if (!name) return toast('名字得有');
+  if (name === '阿衍' || S.chars.some(x => x.name === name && x !== charEditing)) return toast('已经有叫这个名字的了');
+  if (charEditing) Object.assign(charEditing, { name, persona, avatar: charDraftAva });
+  else { const ch = { id: 'c' + uid(), name, persona, avatar: charDraftAva }; S.chars.push(ch); grpSel.push(ch.id); }
+  if (!store.set('chars', S.chars)) return;
+  closeCharEd(); renderGrpMembers(); render(); toast('存好了');
+};
+$('#charDel').onclick = () => {
+  if (!charEditing || !confirm(`删掉「${charEditing.name}」？他在群里说过的话还留着`)) return;
+  const id = charEditing.id;
+  S.chars = S.chars.filter(x => x !== charEditing); grpSel = grpSel.filter(x => x !== id);
+  S.convs.forEach(c => { if (c.group) c.group.members = c.group.members.filter(x => x !== id); });
+  save('chars'); saveConvs(); closeCharEd(); renderGrpMembers(); render(); renderHead();
+};
+
 // ---------- 余额 ----------
 const BAL_API = 'https://open.bigmodel.cn/api/biz/account/query-customer-account-report';
 const yuan = v => '¥' + (Math.floor((+v || 0) * 100) / 100).toFixed(2);
@@ -1756,8 +2024,8 @@ $('#mdFile').onchange = async e => {
 };
 
 $('#exportBak').onclick = () => {
-  const data = { app: 'ayan', v: 5, at: new Date().toISOString(), model: S.model, vmodel: S.vmodel, persona: S.persona, card: S.card, mems: S.mems, convs: keepConvs(),
-    avatar: S.avatar, period: S.period, ledger: S.ledger, memOn: S.memOn, ciOn: S.ciOn, ciAbout: S.ciAbout, ciHow: S.ciHow, moments: S.moments, momOn: S.momOn };
+  const data = { app: 'ayan', v: 6, at: new Date().toISOString(), model: S.model, vmodel: S.vmodel, persona: S.persona, card: S.card, mems: S.mems, convs: keepConvs(),
+    avatar: S.avatar, period: S.period, ledger: S.ledger, memOn: S.memOn, ciOn: S.ciOn, ciAbout: S.ciAbout, ciHow: S.ciHow, moments: S.moments, momOn: S.momOn, chars: S.chars, myName: S.myName };
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
   a.download = '阿衍备份_' + new Date().toISOString().slice(0, 10) + '.json';
@@ -1774,10 +2042,10 @@ $('#bakFile').onchange = async e => {
     Object.assign(S, { model: d.model || S.model, vmodel: d.vmodel || S.vmodel, persona: d.persona || '', card: d.card || '', mems: d.mems || [], convs: d.convs || [],
       avatar: d.avatar || S.avatar, period: d.period || S.period, ledger: d.ledger || S.ledger,
       memOn: d.memOn != null ? d.memOn : S.memOn, ciOn: d.ciOn != null ? d.ciOn : S.ciOn, ciAbout: d.ciAbout || S.ciAbout, ciHow: d.ciHow || S.ciHow,
-      moments: d.moments || S.moments, momOn: d.momOn != null ? d.momOn : S.momOn });
+      moments: d.moments || S.moments, momOn: d.momOn != null ? d.momOn : S.momOn, chars: d.chars || S.chars, myName: d.myName != null ? d.myName : S.myName });
     migrateMems(); saveMoms(); save('momOn'); momDots();
     S.cur = S.convs[0] ? S.convs[0].id : null;
-    save('model', 'vmodel', 'persona', 'card', 'mems', 'cur', 'avatar', 'period', 'ledger', 'memOn', 'ciOn', 'ciAbout', 'ciHow'); saveConvs(); applyAvatar(); renderHead();
+    save('model', 'vmodel', 'persona', 'card', 'mems', 'cur', 'avatar', 'period', 'ledger', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'chars', 'myName'); saveConvs(); applyAvatar(); renderHead();
     openSet(); render(); renderConvs(); toast('恢复好了');
   } catch { toast('这不是阿衍的备份文件'); }
 };
