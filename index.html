@@ -723,6 +723,8 @@ body.hasbg .meta,body.hasbg .day{color:var(--text)}
         <option value="glm-5.1">glm-5.1</option>
         <option value="glm-5.2">glm-5.2</option>
         <option value="glm-5.3">glm-5.3（最新，一直会思考）</option>
+        <option value="deepseek-chat">deepseek-chat（DeepSeek，要填 DS Key）</option>
+        <option value="deepseek-reasoner">deepseek-reasoner（DeepSeek 深度思考）</option>
       </select></div>
     <div class="it"><div class="lt">看图模型<small>发了图片的那条用它</small></div><input type="text" id="vmodel" placeholder="glm-4v-flash"></div>
     <div class="it"><div class="lt">记住最近多少条<small>越多越懂上下文，也越费</small></div>
@@ -787,6 +789,8 @@ body.hasbg .meta,body.hasbg .day{color:var(--text)}
    <section data-pane="acc">
     <div class="blk"><label>智谱 API Key<small>open.bigmodel.cn → 个人中心 → API Keys。只存在这台设备上</small></label>
       <input type="password" id="key" placeholder="粘贴 API Key" autocomplete="off"></div>
+    <div class="blk"><label>DeepSeek API Key<small>platform.deepseek.com → API keys。聊天模型选 deepseek 的时候用它；看图、画头像、联网还是走智谱</small></label>
+      <input type="password" id="dskey" placeholder="sk-…" autocomplete="off"></div>
     <div class="it"><div class="lt">余额<small id="balDetail">—</small></div>
       <div class="addrow"><button class="btn" id="balRefresh">刷新</button><a class="btn" href="https://open.bigmodel.cn/finance/pay" target="_blank" rel="noopener">充值</a></div></div>
    </section>
@@ -969,6 +973,13 @@ body.hasbg .meta,body.hasbg .day{color:var(--text)}
 <script>
 'use strict';
 const API = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+// v32：聊天也能走 DeepSeek（11/5 晚智谱有余额却全报 1113）。只有聊天走它，看图/画图/搜索/余额还是智谱
+const DS_API = 'https://api.deepseek.com/chat/completions';
+const isDS = m => /^deepseek/.test(m || '');
+const apiOf = m => isDS(m) ? DS_API : API;
+const authOf = m => 'Bearer ' + (isDS(m) ? S.dsKey : S.key).trim();
+const hasKey = () => !!(isDS(S.model) ? S.dsKey : S.key).trim();
+const keyHint = () => isDS(S.model) ? '先去设置里填 DeepSeek Key' : '先去设置里填智谱 Key';
 const MEM_MAX = 80;
 const $ = s => document.querySelector(s);
 
@@ -978,7 +989,7 @@ const store = {
   set(k, v) { try { localStorage.setItem('ayan.' + k, JSON.stringify(v)); return true; } catch { toast('存不进去了，导出个备份再清清旧对话'); return false; } }
 };
 let S = {
-  key: store.get('key', ''), model: store.get('model', 'glm-4.7-flash'), vmodel: store.get('vmodel', 'glm-4v-flash'),
+  key: store.get('key', ''), dsKey: store.get('dsKey', ''), model: store.get('model', 'glm-4.7-flash'), vmodel: store.get('vmodel', 'glm-4v-flash'),
   persona: store.get('persona', ''), card: store.get('card', ''),
   mems: store.get('mems', []), convs: store.get('convs', []), cur: store.get('cur', null),
   theme: store.get('theme', 'light'), web: store.get('web', false), think: store.get('think', false),
@@ -1324,6 +1335,8 @@ function friendlyError(status, body) {
   const code = (body && body.error && body.error.code) || '';
   const msg = (body && body.error && body.error.message) || '';
   if (code === '1309' || /套餐已到期/.test(msg)) return '这个 Key 绑的智谱套餐到期了（连免费模型也用不了）。去 open.bigmodel.cn 新建一个普通 API Key，或者续订套餐。';
+  if (status === 402 || /Insufficient Balance/i.test(msg)) return 'DeepSeek 余额不够了，去 platform.deepseek.com 充一点。';
+  if (status === 401 && /deepseek|Authentication/i.test(msg)) return 'DeepSeek Key 不对，去设置里重新粘一遍。';
   if (status === 401 || code === '1000' || code === '1001' || code === '1002') return 'Key 不对或者过期了，去设置里换一个。';
   if (code === '1113' || /余额|欠费|balance/i.test(msg)) return `智谱说这个模型扣不了钱（${code || status}${msg ? '：' + msg : ''}）。余额要是还有，多半是送的资源包用完了，去 open.bigmodel.cn 看「资源包」和实名认证。`;
   if (code === '1211' || /模型不存在|model/i.test(msg) && status === 400) return '这个模型名智谱不认，去设置里换一个试试。';
@@ -1455,7 +1468,7 @@ function recallSearch(q, id, cur, days) {
 
 const alwaysThinks = m => /^glm-5\.(3|[4-9])/.test(m);
 // 免费的挤不进去换下一个免费的；v30：付费模型报没钱（11/5 晚 glm-5.3 突然 1113，余额明明 19.97）就退到 4.5-air / 4.5v 先接着聊
-const modelTries = (first, free, vision) => /-flash$/.test(first) ? [first, ...free.filter(m => m !== first)] : [first, ...(vision ? ['glm-4.5v'] : ['glm-4.5-air']).filter(m => m !== first)];
+const modelTries = (first, free, vision) => isDS(first) ? [first] : /-flash$/.test(first) ? [first, ...free.filter(m => m !== first)] : [first, ...(vision ? ['glm-4.5v'] : ['glm-4.5-air']).filter(m => m !== first)];
 
 async function ask(c) {
   const bot = { role: 'assistant', content: '', t: Date.now() };
@@ -1502,11 +1515,12 @@ async function streamInto(body, tries, bot, vision, who = '', ctx = null) {
       let res;
       for (let n = 0; ; n++) {
         body.model = tries[n];
+        if (isDS(body.model)) { delete body.reasoning_effort; delete body.thinking; body.stream_options = { include_usage: true }; } else delete body.stream_options;
         // 换到不是一直思考的模型，思考参数跟着换
         if (!vision && n && body.reasoning_effort && !alwaysThinks(body.model)) { body.thinking = { type: body.reasoning_effort === 'high' ? 'enabled' : 'disabled' }; delete body.reasoning_effort; }
-        res = await fetch(API, {
+        res = await fetch(apiOf(body.model), {
           method: 'POST', signal: ctrl.signal,
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
+          headers: { 'Content-Type': 'application/json', Authorization: authOf(body.model) },
           body: JSON.stringify(body)
         });
         if (res.ok) break;
@@ -1735,7 +1749,7 @@ function send(textArg) {
   const text = (typeof textArg === 'string' ? textArg : $('#input').value).trim();
   if (!text && !pending.length && !pendFiles.length) return;
   if (pendFiles.some(f => f.loading)) return toast('文件还在读');
-  if (!S.key.trim()) { toast('先去设置里填智谱 Key'); openSet(); return; }
+  if (!hasKey()) { toast(keyHint()); openSet(); return; }
   stopSpeak();
   const c = ensureConv();
   const m = { role: 'user', content: text, t: Date.now() };
@@ -1871,7 +1885,7 @@ $('#plusBtn').onclick = e => {
 
 $('#list').addEventListener('click', e => {
   const st = e.target.closest('[data-start]'); if (st) return send(st.dataset.start);
-  if (e.target.closest('[data-cont]')) { if (busy) return; if (!S.key.trim()) return toast('先填 Key'); return reply(curConv(), true); }
+  if (e.target.closest('[data-cont]')) { if (busy) return; if (!hasKey()) return toast(keyHint()); return reply(curConv(), true); }
   const cp = e.target.closest('[data-cp]');
   if (cp) { const t = cp.parentElement.querySelector('code').textContent; navigator.clipboard?.writeText(t).then(() => toast('复制了')); return; }
   const im = e.target.closest('img.att'); if (im) { $('#viewer img').src = im.src; $('#viewer').classList.add('on'); return; }
@@ -2259,9 +2273,9 @@ async function llm(messages, max) {
   if (alwaysThinks(S.model)) body.reasoning_effort = 'low'; else body.thinking = { type: 'disabled' };
   for (const model of [S.model, 'glm-4-flash']) {
     body.model = model;
-    if (model === 'glm-4-flash') { delete body.reasoning_effort; delete body.thinking; }
+    if (model === 'glm-4-flash' || isDS(model)) { delete body.reasoning_effort; delete body.thinking; }
     try {
-      const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() }, body: JSON.stringify(body) });
+      const r = await fetch(apiOf(model), { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: authOf(model) }, body: JSON.stringify(body) });
       const j = await r.json(), t = j.choices && j.choices[0] && j.choices[0].message.content;
       if (j.usage) addUsage(model, j.usage);
       if (t && t.trim()) return t.trim();
@@ -2305,7 +2319,7 @@ ${recentPosts ? '你之前发过的（别重复）：\n' + recentPosts + '\n' : 
   return slots.map((t, i) => arr[i] && arr[i].text ? { t, text: String(arr[i].text).trim(), imgDesc: String(arr[i].img || '').trim() } : null).filter(Boolean);
 }
 async function momCatchUp(force) {
-  if (momBusy || !S.key.trim() || (!force && !S.momOn)) return;
+  if (momBusy || !hasKey() || (!force && !S.momOn)) return;
   const now = Date.now();
   if (!force && now - momTried < 30 * 6e4) return;
   const base = S.moments.length ? S.moments[0].t : now;
@@ -2355,7 +2369,7 @@ ${thread}
 }
 $('#momBtn').onclick = openMom;
 $('#closeMom').onclick = () => $('#mom').classList.remove('on');
-$('#momPost').onclick = () => { if (!S.key.trim()) return toast('先填 Key'); if (momBusy) return toast('他还在发上一条'); momCatchUp(true); };
+$('#momPost').onclick = () => { if (!hasKey()) return toast(keyHint()); if (momBusy) return toast('他还在发上一条'); momCatchUp(true); };
 $('#momFeed').addEventListener('click', async e => {
   const im = e.target.closest('img.mi'); if (im) { $('#viewer img').src = im.src; $('#viewer').classList.add('on'); return; }
   const b = e.target.closest('[data-ma]'); if (!b) return;
@@ -2696,7 +2710,7 @@ function tryPlay(src) {
 // v28：她手机上 Apple 连不上、智谱也搜不到网易云的歌。改走 QQ 音乐：它的搜索认 JSONP（国内直连），
 // 找到歌就开 QQ 音乐自己的手机播放页（免费歌整首、VIP 歌它自己给试听）。真正在月亮里放的，是「一起听」里她加的手机里的歌
 let playQueue = [];
-const APPV = 'v31';
+const APPV = 'v32';
 const qqPlay = mid => 'https://i.y.qq.com/v8/playsong.html?songmid=' + mid;
 async function qqFind(q) {
   const j = await jsonp(`https://c.y.qq.com/soso/fcgi-bin/client_search_cp?w=${encodeURIComponent(q)}&format=jsonp&p=1&n=5&cr=1`, 7000, 'jsonpCallback');
@@ -2873,7 +2887,7 @@ function renderMems() {
 }
 function openSet() {
   closeSide();
-  $('#key').value = S.key; $('#persona').value = S.persona; $('#card').value = S.card; $('#vmodel').value = S.vmodel;
+  $('#key').value = S.key; $('#dskey').value = S.dsKey; $('#persona').value = S.persona; $('#card').value = S.card; $('#vmodel').value = S.vmodel;
   const sel = $('#model');
   if (![...sel.options].some(o => o.value === S.model)) sel.add(new Option(S.model, S.model));
   sel.value = S.model;
@@ -2883,12 +2897,12 @@ function openSet() {
   renderMems(); renderCaps(); renderPalList(); $('#palEd').hidden = true; $('#palList').hidden = false; $('#sheet').classList.add('on'); loadBalance();
 }
 function closeSet() {
-  S.key = $('#key').value.trim(); S.model = $('#model').value; S.vmodel = $('#vmodel').value.trim() || 'glm-4v-flash';
+  S.key = $('#key').value.trim(); S.dsKey = $('#dskey').value.trim(); S.model = $('#model').value; S.vmodel = $('#vmodel').value.trim() || 'glm-4v-flash';
   S.persona = $('#persona').value; S.card = $('#card').value;
   S.theme = $('#theme').value; S.autoRead = $('#autoRead').checked; S.ctxN = +$('#ctxN').value;
   S.memOn = $('#memOn').checked; S.ciOn = $('#ciOn').checked; S.ciAbout = $('#ciAbout').value; S.ciHow = $('#ciHow').value;
   S.momOn = $('#momOn').checked; S.recall = $('#recall').value;
-  store.set('recall2', S.recall); save('key', 'model', 'vmodel', 'persona', 'card', 'theme', 'autoRead', 'ctxN', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'momOn'); applyTheme();
+  store.set('recall2', S.recall); save('key', 'dsKey', 'model', 'vmodel', 'persona', 'card', 'theme', 'autoRead', 'ctxN', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'momOn'); applyTheme();
   $('#sheet').classList.remove('on'); render(); renderHead(); loadBalance();
 }
 $('#setBtn').onclick = openSet;
