@@ -962,18 +962,31 @@ const webTool = () => [{ type: 'function', function: {
   description: '上网搜。新闻、价格（金价、汇率）、天气、今天发生的事、你拿不准的事实，都先调它再回答。',
   parameters: { type: 'object', properties: { query: { type: 'string', description: '搜索词，20 字以内，带上日期或地点，比如"2026年11月5日 金价"' } }, required: ['query'] }
 } }];
-async function webSearch(q) {
-  const res = await fetch(API.replace(/chat\/completions$/, 'web_search'), {
+// 先走老的 web-search-pro（她的号上新接口 /web_search 报 1113 余额不足，老的能用），不行再试新接口
+async function zpPost(path, payload) {
+  const res = await fetch(API.replace(/chat\/completions$/, path), {
     method: 'POST', signal: ctrl && ctrl.signal,
     headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
-    body: JSON.stringify({ search_query: String(q || '').slice(0, 70), search_engine: 'search_std', search_intent: false, count: 6, content_size: 'medium' })
+    body: JSON.stringify(payload)
   });
   let j = null; try { j = await res.json(); } catch {}
-  if (!res.ok) throw new Error((j && j.error && j.error.message) || ('搜索出错 ' + res.status));
-  return (j && j.search_result) || [];
+  if (!res.ok || (j && j.error)) throw new Error((j && j.error && j.error.message) || ('搜索出错 ' + res.status));
+  return j || {};
+}
+async function webSearch(q) {
+  q = String(q || '').slice(0, 70);
+  try {
+    const j = await zpPost('tools', { tool: 'web-search-pro', stream: false, messages: [{ role: 'user', content: q }] });
+    const tc = (j.choices?.[0]?.message?.tool_calls || []).find(t => t.search_result);
+    return tc ? tc.search_result.slice(0, 8) : [];
+  } catch (e) {
+    if (e.name === 'AbortError') throw e;
+    const j = await zpPost('web_search', { search_query: q, search_engine: 'search_std', search_intent: false, count: 8, content_size: 'medium' });
+    return j.search_result || [];
+  }
 }
 const searchText = (q, rs) => rs.length
-  ? `搜「${q}」，${new Date().toLocaleDateString('zh-CN')} 拿到的结果：\n\n` + rs.map((r, i) => `[${i + 1}] ${r.title || ''}（${r.media || ''}${r.publish_date ? '，' + r.publish_date : ''}）\n${(r.content || '').slice(0, 500)}`).join('\n\n')
+  ? `搜「${q}」，${new Date().toLocaleDateString('zh-CN')} 拿到的结果：\n\n` + rs.map((r, i) => `[${i + 1}] ${r.title || ''}（${r.media || ''}${r.publish_date ? '，' + r.publish_date : ''}）\n${(r.content || '').slice(0, 800)}`).join('\n\n')
   : `搜「${q}」什么都没搜到。`;
 
 const alwaysThinks = m => /^glm-5\.(3|[4-9])/.test(m);
