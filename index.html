@@ -518,6 +518,9 @@ input.tg:disabled{opacity:.35;cursor:not-allowed}
 .capc .cci{width:30px;height:30px;border-radius:10px;background:var(--icobg);color:var(--acc);display:grid;place-items:center;flex:none}
 .capc .cct{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .capc.sms .cct{white-space:normal}
+.capc .mplay{border:0;padding:0;font-size:13px;cursor:pointer;color:var(--acc)}
+.capc.music.on{border-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+.capc .cct small{display:block;font-size:11px;color:var(--muted);margin-top:1px}
 .capc a,.capc button{flex:none;font-size:12.5px;color:var(--acc);text-decoration:none;padding:4px 10px;border-radius:999px;border:1px solid color-mix(in srgb,var(--acc) 35%,transparent)}
 /* 角色列表 */
 .pal-hint{margin:12px 0 4px;color:var(--muted);font-size:12.5px}
@@ -2304,7 +2307,7 @@ const CAP_LINKS = {
 const CAPS = [
   { k: 'geo', ico: '⌖', name: '定位和天气', tag: '系统授权', desc: '知道你在哪个城市、现在什么天气，聊天时自然带上。打开时 iPhone 会问一次' },
   { k: 'photo', ico: '▧', name: '相册', tag: '选了才看', desc: '只看你在「+」里挑的那几张，别的一张都碰不到' },
-  { k: 'music', ico: '♫', name: '音乐', tag: '点了才放', desc: '按心情推荐，点一下跳到网易云 / QQ 音乐' },
+  { k: 'music', ico: '♫', name: '音乐', tag: '点了才放', desc: '按心情推荐，卡片上点 ▶ 直接放（网易云免费歌放整首，VIP 歌放 30 秒试听），也能跳网易云 / QQ 音乐' },
   { k: 'notes', ico: '▤', name: '便签', tag: 'App 里', desc: '让他们帮你记清单、备忘，存在下面' },
   { k: 'sms', ico: '✉', name: '信息', tag: '你来发', desc: '帮你起草要发给别人的话，点一下打开短信或复制，发不发你定' },
   { k: 'food', ico: '⌂', name: '外卖', tag: '你来付款', desc: '帮你想吃什么，点一下打开美团，挑和付钱都是你自己' },
@@ -2382,13 +2385,89 @@ function capCards(t) {
   const out = [];
   for (const m of (t || '').matchAll(/\[\[\s*(听歌|外卖|短信)\s*[|｜]([^\]]+)\]\]/g)) {
     const k = m[1], v = m[2].trim(); if (!v) continue;
-    if (k === '听歌' && capOn('music')) out.push(`<div class="capc"><span class="cci">♫</span><span class="cct">${esc(v)}</span><a href="${esc(CAP_LINKS.netease(v))}" target="_blank" rel="noopener">网易云</a><a href="${esc(CAP_LINKS.qq(v))}" target="_blank" rel="noopener">QQ 音乐</a></div>`);
+    if (k === '听歌' && capOn('music')) {
+      const st = nowPlay.q === v ? nowPlay.st : '', hit = musicCache[v] || {};
+      const ico = st === 'load' ? '…' : st === 'play' ? '❚❚' : '▶';
+      const sub = nowPlay.q === v && nowPlay.label ? `<small>${esc(nowPlay.label)}</small>` : '';
+      out.push(`<div class="capc music${st ? ' on' : ''}"><button class="cci mplay" data-play="${esc(v)}" aria-label="播放">${ico}</button><span class="cct">${esc(v)}${sub}</span><a href="${esc(hit.ne ? 'https://music.163.com/m/song?id=' + hit.ne : CAP_LINKS.netease(v))}" target="_blank" rel="noopener">网易云</a><a href="${esc(CAP_LINKS.qq(v))}" target="_blank" rel="noopener">QQ 音乐</a></div>`);
+    }
     if (k === '外卖' && capOn('food')) out.push(`<div class="capc"><span class="cci">⌂</span><span class="cct">${esc(v)}</span><a href="${esc(CAP_LINKS.meituan())}" target="_blank" rel="noopener">美团</a><a href="${esc(CAP_LINKS.amap(v))}" target="_blank" rel="noopener">附近</a></div>`);
     if (k === '短信' && capOn('sms')) out.push(`<div class="capc sms"><span class="cci">✉</span><span class="cct">${esc(v)}</span><a href="${esc(CAP_LINKS.sms(v))}">发短信</a><button data-copy="${esc(v)}">复制</button></div>`);
   }
   return out.length ? `<div class="capcs">${out.join('')}</div>` : '';
 }
+// ---------- 卡片上直接放歌 ----------
+// 先找网易云的歌（用智谱搜索找到歌的 id，免费歌能整首放）；放不了（VIP/没找到）就放 Apple 的 30 秒试听
+// iPhone 规定点了才能出声：点下去那一刻先放一段静音把播放器"解锁"，等找到歌再换源
+const player = new Audio(); player.preload = 'none';
+let nowPlay = { q: '', st: '', label: '' };
+let musicCache = store.get('musicCache', {});
+const SILENT = (() => { const n = 800, b = new Uint8Array(44 + n), d = new DataView(b.buffer), w = (o, t) => [...t].forEach((c, i) => b[o + i] = c.charCodeAt(0));
+  w(0, 'RIFF'); d.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); d.setUint32(16, 16, true); d.setUint16(20, 1, true); d.setUint16(22, 1, true);
+  d.setUint32(24, 8000, true); d.setUint32(28, 8000, true); d.setUint16(32, 1, true); d.setUint16(34, 8, true); w(36, 'data'); d.setUint32(40, n, true); b.fill(128, 44);
+  return 'data:audio/wav;base64,' + btoa(String.fromCharCode(...b)); })();
+function setPlay(q, st, label) { nowPlay = { q, st, label: label != null ? label : nowPlay.label }; render(); }
+function likeSong(title, q) {
+  const name = (q.split(/\s+/)[0] || q), g = grams(name), t = String(title || '').toLowerCase();
+  if (!g.size) return true; let h = 0; for (const x of g) if (t.includes(x)) h++;
+  return h / g.size >= 0.5;
+}
+async function neteaseId(q) {
+  if (!S.key.trim()) return '';
+  const rs = await webSearch(q + ' 网易云音乐 单曲').catch(() => []);
+  for (const r of rs) {
+    const m = String(r.link || '').match(/music\.163\.com\/(?:#\/)?(?:m\/)?song(?:\?id=|\/)(\d+)/);
+    if (m && likeSong(r.title, q)) return m[1];
+  }
+  return '';
+}
+async function itunesFind(q) {
+  for (const cc of ['cn', 'tw', 'hk', 'us']) {
+    try {
+      const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=song&limit=5&country=${cc}`);
+      if (!r.ok) continue;
+      const hit = ((await r.json()).results || []).find(x => x.previewUrl);
+      if (hit) return { url: hit.previewUrl, name: hit.trackName, artist: hit.artistName, art: hit.artworkUrl100 };
+    } catch {}
+  }
+  return null;
+}
+// 换源放，放起来了算成；报错或 8 秒没动静算不成
+function tryPlay(src) {
+  return new Promise(res => {
+    let done = false; const fin = ok => { if (done) return; done = true; clearTimeout(t); player.removeEventListener('playing', y); player.removeEventListener('error', n); res(ok); };
+    const y = () => fin(true), n = () => fin(false), t = setTimeout(() => fin(false), 8000);
+    player.addEventListener('playing', y); player.addEventListener('error', n);
+    player.src = src; player.play().catch(() => fin(false));
+  });
+}
+async function playSong(q) {
+  if (nowPlay.q === q && nowPlay.st === 'play') { player.pause(); return setPlay(q, 'pause'); }
+  if (nowPlay.q === q && nowPlay.st === 'pause') { player.play().catch(() => {}); return setPlay(q, 'play'); }
+  if (nowPlay.st === 'load') return;
+  player.src = SILENT; player.play().catch(() => {});
+  setPlay(q, 'load', '在找…');
+  let hit = musicCache[q];
+  if (!hit) {
+    const [ne, it] = await Promise.all([neteaseId(q), itunesFind(q)]);
+    hit = { ne, it }; musicCache[q] = hit;
+    const ks = Object.keys(musicCache); if (ks.length > 60) delete musicCache[ks[0]];
+    store.set('musicCache', musicCache);
+  }
+  if (nowPlay.q !== q) return; // 等的时候她点了别的
+  let ok = false, label = '';
+  if (hit.ne) { ok = await tryPlay(`https://music.163.com/song/media/outer/url?id=${hit.ne}.mp3`); label = '整首 · 网易云'; }
+  if (!ok && hit.it) { ok = await tryPlay(hit.it.url); label = '试听 30 秒'; }
+  if (nowPlay.q !== q) return;
+  if (!ok) { setPlay('', '', ''); return toast('这首在这儿放不了，点「网易云」去听'); }
+  if ('mediaSession' in navigator && window.MediaMetadata) {
+    try { navigator.mediaSession.metadata = new MediaMetadata({ title: (hit.it && hit.it.name) || q, artist: (hit.it && hit.it.artist) || '', artwork: hit.it && hit.it.art ? [{ src: hit.it.art, sizes: '100x100' }] : [] }); } catch {}
+  }
+  setPlay(q, 'play', label);
+}
+player.addEventListener('ended', () => { if (nowPlay.st === 'play') setPlay(nowPlay.q, '', ''); });
 document.addEventListener('click', e => {
+  const p = e.target.closest('[data-play]'); if (p) return playSong(p.dataset.play);
   const b = e.target.closest('[data-copy]'); if (!b) return;
   navigator.clipboard.writeText(b.dataset.copy).then(() => toast('复制好了'), () => toast('复制不了，长按文字自己复制'));
 });
