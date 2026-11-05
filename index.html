@@ -2520,7 +2520,7 @@ const CAP_LINKS = {
 const CAPS = [
   { k: 'geo', ico: '⌖', name: '定位和天气', tag: '系统授权', desc: '知道你在哪个城市、现在什么天气，聊天时自然带上。打开时 iPhone 会问一次' },
   { k: 'photo', ico: '▧', name: '相册', tag: '选了才看', desc: '只看你在「+」里挑的那几张，别的一张都碰不到' },
-  { k: 'music', ico: '♫', name: '音乐', tag: '点了才放', desc: '按心情推荐，卡片上点 ▶ 直接放（网易云免费歌放整首，VIP 歌放 30 秒试听），也能跳网易云 / QQ 音乐' },
+  { k: 'music', ico: '♫', name: '音乐', tag: '点了才放', desc: '按心情推荐。点 ▶：手机里有这首（生活→一起听里加的）就在月亮里放，没有就开 QQ 音乐的播放页' },
   { k: 'notes', ico: '▤', name: '便签', tag: 'App 里', desc: '让他们帮你记清单、备忘，存在下面' },
   { k: 'sms', ico: '✉', name: '信息', tag: '你来发', desc: '帮你起草要发给别人的话，点一下打开短信或复制，发不发你定' },
   { k: 'food', ico: '⌂', name: '外卖', tag: '你来付款', desc: '帮你想吃什么，点一下打开美团，挑和付钱都是你自己' },
@@ -2602,7 +2602,7 @@ function capCards(t) {
       const st = nowPlay.q === v ? nowPlay.st : '', hit = musicCache[v] || {};
       const ico = st === 'load' ? '…' : st === 'play' ? '❚❚' : '▶';
       const sub = nowPlay.q === v && nowPlay.label ? `<small>${esc(nowPlay.label)}</small>` : '';
-      out.push(`<div class="capc music${st ? ' on' : ''}"><button class="cci mplay" data-play="${esc(v)}" aria-label="播放">${ico}</button><span class="cct">${esc(v)}${sub}</span><a href="${esc(hit.ne ? neSong(hit.ne) : CAP_LINKS.netease(v))}" target="_blank" rel="noopener" data-ne="${esc(v)}">网易云</a><a href="${esc(CAP_LINKS.qq(v))}" target="_blank" rel="noopener">QQ 音乐</a></div>`);
+      out.push(`<div class="capc music${st ? ' on' : ''}"><button class="cci mplay" data-play="${esc(v)}" aria-label="播放">${ico}</button><span class="cct">${esc(v)}${sub}</span><a href="${esc(hit.ne ? neSong(hit.ne) : CAP_LINKS.netease(v))}" target="_blank" rel="noopener" data-ne="${esc(v)}">网易云</a><a href="${esc(hit.qq ? qqPlay(hit.qq.mid) : CAP_LINKS.qq(v))}" target="_blank" rel="noopener">QQ 音乐</a></div>`);
     }
     if (k === '外卖' && capOn('food')) out.push(`<div class="capc"><span class="cci">⌂</span><span class="cct">${esc(v)}</span><a href="${esc(CAP_LINKS.meituan())}" target="_blank" rel="noopener">美团</a><a href="${esc(CAP_LINKS.amap(v))}" target="_blank" rel="noopener">附近</a></div>`);
     if (k === '短信' && capOn('sms')) out.push(`<div class="capc sms"><span class="cci">✉</span><span class="cct">${esc(v)}</span><a href="${esc(CAP_LINKS.sms(v))}">发短信</a><button data-copy="${esc(v)}">复制</button></div>`);
@@ -2642,14 +2642,14 @@ async function neteaseId(q) {
   return '';
 }
 // Apple 的搜索也认 JSONP：fetch 在她手机上「连不上」，换成 <script> 标签取，不走跨域那一套
-function jsonp(url, ms = 7000) {
+function jsonp(url, ms = 7000, cbName = 'callback') {
   return new Promise((ok, no) => {
     const cb = '__jp' + uid(), sc = document.createElement('script');
     const end = () => { clearTimeout(t); delete window[cb]; sc.remove(); };
     const t = setTimeout(() => { end(); no(new Error('超时')); }, ms);
     window[cb] = d => { end(); ok(d); };
     sc.onerror = () => { end(); no(new Error('连不上')); };
-    sc.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+    sc.src = url + (url.includes('?') ? '&' : '?') + cbName + '=' + cb;
     document.head.appendChild(sc);
   });
 }
@@ -2686,71 +2686,58 @@ function tryPlay(src) {
     player.src = src; player.play().catch(e => fin(e && e.name === 'NotAllowedError' ? 'blocked' : 'fail'));
   });
 }
+// v28：她手机上 Apple 连不上、智谱也搜不到网易云的歌。改走 QQ 音乐：它的搜索认 JSONP（国内直连），
+// 找到歌就开 QQ 音乐自己的手机播放页（免费歌整首、VIP 歌它自己给试听）。真正在月亮里放的，是「一起听」里她加的手机里的歌
 let playQueue = [];
-const APPV = 'v27';
+const APPV = 'v28';
+const qqPlay = mid => 'https://i.y.qq.com/v8/playsong.html?songmid=' + mid;
+async function qqFind(q) {
+  const j = await jsonp(`https://c.y.qq.com/soso/fcgi-bin/client_search_cp?w=${encodeURIComponent(q)}&format=jsonp&p=1&n=5&cr=1`, 7000, 'jsonpCallback');
+  const ls = (j && j.data && j.data.song && j.data.song.list) || [];
+  const hit = ls.find(x => likeSong(x.songname, q)) || ls[0];
+  return hit ? { mid: hit.songmid, name: hit.songname, singer: (hit.singer || []).map(x => x.name).join('/') } : null;
+}
+async function qqCached(q) {
+  const c = musicCache[q]; if (c && c.qq) return c.qq;
+  const r = await qqFind(q).catch(() => null);
+  if (r) { musicCache[q] = { ...(c || {}), qq: r }; const ks = Object.keys(musicCache); if (ks.length > 80) delete musicCache[ks[0]]; store.set('musicCache', musicCache); }
+  return r;
+}
 async function prefetchSongs(t) {
   if (!capOn('music')) return;
-  for (const m of (t || '').matchAll(/\[\[\s*听歌\s*[|｜]([^\]]+)\]\]/g)) {
-    const q = m[1].trim(); if (!q || (musicCache[q] && (musicCache[q].ne || musicCache[q].it))) continue;
-    const [ne, it] = await Promise.all([neteaseId(q), itunesFind(q)]);
-    if (ne || it) { musicCache[q] = { ne, it }; store.set('musicCache', musicCache); render(); }
-  }
-}   // 还没试的源 [{src,label}]
-async function runQueue(q, hit) {
-  while (playQueue.length) {
-    const c = playQueue[0];
-    setPlay(q, 'load', c.label === '整首 · 网易云' ? '找到了，在连网易云…' : '在连…');
-    const r = await tryPlay(c.src);
-    if (nowPlay.q !== q) return;
-    if (r === 'ok') {
-      if ('mediaSession' in navigator && window.MediaMetadata) {
-        try { navigator.mediaSession.metadata = new MediaMetadata({ title: (hit.it && hit.it.name) || q, artist: (hit.it && hit.it.artist) || '', artwork: hit.it && hit.it.art ? [{ src: hit.it.art, sizes: '100x100' }] : [] }); } catch {}
-      }
-      return setPlay(q, 'play', c.label);
-    }
-    if (r === 'blocked') return setPlay(q, 'ready', '找到了，再点一下 ▶');
-    musicDiag.play = (musicDiag.play ? musicDiag.play + '；' : '') + c.label + ' 放不出来' + (player.error ? '（' + player.error.code + '）' : '');
-    playQueue.shift();
-  }
-  setPlay('', '', '');
-  const d = `网易云：${musicDiag.ne || '没试'}\nApple：${musicDiag.it || '没试'}${musicDiag.play ? '\n' + musicDiag.play : ''}`;
-  alert((hit.ne || hit.it ? '找到了但放不出来' : '没找到这首') + '（截图给哥哥看）\n\n' + d + '\n\n版本 ' + APPV);
+  for (const m of (t || '').matchAll(/\[\[\s*听歌\s*[|｜]([^\]]+)\]\]/g)) { const q = m[1].trim(); if (q) await qqCached(q); }
+  render();
 }
-async function playSong(q) {
+// 手机里有这首就直接放
+function localTrack(q) {
+  const name = (q.split(/\s+/)[0] || q).toLowerCase();
+  return (S.tracks || []).find(t => t.name.toLowerCase().includes(name) && trkUrl[t.id]);
+}
+function playSong(q) {
   if (nowPlay.q === q && nowPlay.st === 'play') { player.pause(); return setPlay(q, 'pause'); }
   if (nowPlay.q === q && nowPlay.st === 'pause') { player.play().catch(() => {}); return setPlay(q, 'play'); }
-  if (nowPlay.st === 'load') return;
-  // 上一下被手机拦了：这次是她亲手点的，当场换源放就不会再拦
-  if (nowPlay.q === q && nowPlay.st === 'ready' && playQueue.length) return runQueue(q, musicCache[q] || {});
-  player.src = SILENT; player.play().catch(() => {});
-  setPlay(q, 'load', '在找…');
-  let hit = musicCache[q];
-  if (!hit || !(hit.ne || hit.it)) {
-    for (const k in musicDiag) delete musicDiag[k];
-    const [ne, it] = await Promise.all([neteaseId(q), itunesFind(q)]);
-    hit = { ne, it };
-    // 找到了才记，没找到下次重找
-    if (ne || it) { musicCache[q] = hit; const ks = Object.keys(musicCache); if (ks.length > 60) delete musicCache[ks[0]]; store.set('musicCache', musicCache); }
-  }
-  if (nowPlay.q !== q) return; // 等的时候她点了别的
-  playQueue = [];
-  if (hit.ne) playQueue.push({ src: `https://music.163.com/song/media/outer/url?id=${hit.ne}.mp3`, label: '整首 · 网易云' });
-  if (hit.it) playQueue.push({ src: hit.it.url, label: '试听 30 秒' });
-  runQueue(q, hit);
+  const lt = localTrack(q);
+  if (lt) { player.src = trkUrl[lt.id]; player.play().then(() => setPlay(q, 'play', '手机里的歌')).catch(() => toast('这首放不了')); return; }
+  const c = musicCache[q];
+  if (c && c.qq) return void window.open(qqPlay(c.qq.mid), '_blank');
+  // 还没找过：点下去那一刻先开窗口（iPhone 只认这一下），找到了再把它指过去
+  const w = window.open('about:blank', '_blank');
+  setPlay(q, 'load', '在 QQ 音乐里找…');
+  qqCached(q).then(r => {
+    setPlay('', '', '');
+    const url = r ? qqPlay(r.mid) : CAP_LINKS.qq(q);
+    if (!r) toast('没找到这首，换成搜索');
+    if (w && !w.closed) w.location.href = url; else location.href = url;
+  });
 }
 const neSong = id => 'https://music.163.com/m/song?id=' + id;
-// 「网易云」：手机上网易云的搜索页是空白的，所以先找到这首歌的 id，直接开歌的页面（那页能放、也能跳 App）
-// iPhone 只认点下去那一下开的窗口：先开个空窗口，找到了再把它指过去
-async function openNetease(q) {
+// 「网易云」：没有能用的搜索接口，手机网页的搜索页又是空白——找过 id 的直接开歌页，没有就开网易云手机首页
+function openNetease(q) {
   const hit = musicCache[q];
   if (hit && hit.ne) return window.open(neSong(hit.ne), '_blank');
-  const w = window.open('about:blank', '_blank');
-  toast('在网易云里找这首…');
-  const id = await neteaseId(q);
-  if (id) { musicCache[q] = { ...(musicCache[q] || {}), ne: id }; store.set('musicCache', musicCache); render(); }
-  const url = id ? neSong(id) : CAP_LINKS.qq(q);
-  if (!id) toast('网易云没找到，换 QQ 音乐搜');
-  if (w && !w.closed) w.location.href = url; else location.href = url;
+  navigator.clipboard && navigator.clipboard.writeText(q).catch(() => {});
+  toast('歌名复制好了，网易云里粘贴搜一下');
+  window.open('https://music.163.com/m/', '_blank');
 }
 player.addEventListener('ended', () => { if (nowPlay.st === 'play') setPlay(nowPlay.q, '', ''); });
 document.addEventListener('click', e => {
@@ -3394,7 +3381,7 @@ syncLayout(); renderConvs(); renderTools(); render(); renderHead(); applyAvatar(
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshWeather(); });
 if (S.avatar && S.avatar.gen && Date.now() - S.avatar.t > 6.5 * 864e5) genAvatar(S.avatar.desc, true);
 importFromHash();
-momDots(); setTimeout(momCatchUp, 2500);
+momDots(); setTimeout(momCatchUp, 2500); loadTrackUrls();
 if (!S.key && !location.hash.startsWith('#pack=')) setTimeout(() => toast(isWide() ? '先点左下角「设置」，填 Key、导入人格包' : '先点左上角 → 设置，填 Key、导入人格包'), 600);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
