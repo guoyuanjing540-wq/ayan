@@ -533,6 +533,118 @@ input.tg:disabled{opacity:.35;cursor:not-allowed}
 #palAva{width:56px;height:56px}
 .paled .it b{font-size:16px}
 .toast{color:#faf6f0}
+
+/* ================= v27：底部标签和几张新页面（照知言那套，换成月亮的颜色） ================= */
+.tabbar{display:none}
+@media (max-width:899px){
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:28;padding:6px 6px calc(4px + var(--safe-b));
+    background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border-top:1px solid var(--line)}
+  .tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted);font-size:11.5px;position:relative;padding:4px 0}
+  .tabbar svg{width:24px;height:24px}
+  .tabbar button.on{color:var(--acc)}
+  .tabbar .dot{position:absolute;top:2px;left:calc(50% + 8px)}
+  body.tabs footer{padding-bottom:calc(64px + var(--safe-b))}
+  body.tabs .tabpage{padding-bottom:calc(90px + var(--safe-b))}
+}
+.tabpage{position:fixed;inset:0;z-index:25;overflow-y:auto;display:none;background:var(--bg);padding:calc(18px + var(--safe-t)) 18px 40px;-webkit-overflow-scrolling:touch}
+.tabpage.on{display:block}
+@media (min-width:900px){.tabpage{left:272px}.tabpage .pgin{padding-top:10px}}
+.pgin{max-width:680px;margin:0 auto}
+.pgk{font-size:12px;letter-spacing:.32em;color:var(--muted);margin-top:8px}
+.pgh{font-family:var(--serif);font-size:32px;margin:4px 0 14px;color:var(--silver);letter-spacing:.06em;line-height:1.3}
+.pgh2{font-family:var(--serif);font-size:21px;margin:28px 0 8px;color:var(--silver);letter-spacing:.06em}
+.pgnote{color:var(--muted);font-size:13.5px;line-height:1.7;margin:4px 0 12px}
+.glasscard,.hero,.tile,.mitem,.addpill{background:color-mix(in srgb,var(--sec) 86%,transparent);border:1px solid var(--line2);box-shadow:var(--shadow);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.hero{border-radius:24px;padding:22px 22px 20px;margin:4px 0 14px;background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 16%,var(--sec)),var(--sec))}
+.hero small{color:var(--muted);font-size:13px}
+.hero .big{font-family:var(--serif);font-size:38px;color:var(--acc);line-height:1.25;margin:4px 0;font-weight:600}
+.hero .sub{font-size:14px;color:var(--text)}
+.hero button{margin-top:10px}
+.whochips,.fchips{display:flex;gap:8px;overflow-x:auto;margin:0 0 14px;padding-bottom:2px;scrollbar-width:none}
+.whochips button,.fchips button{flex:none;display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:1px solid var(--line2);background:var(--sec);color:var(--text);font-size:14px}
+.whochips img{width:22px;height:22px;border-radius:50%}
+.whochips button.on,.fchips button.on{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 9%,var(--sec))}
+.tiles2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tiles3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tile{border-radius:20px;padding:16px 14px;display:flex;align-items:center;gap:12px;text-align:left;min-width:0;color:var(--text)}
+.tile .ti{width:44px;height:44px;border-radius:14px;background:var(--icobg);color:var(--acc);display:grid;place-items:center;font-size:19px;flex:none}
+.tile b{display:block;font-size:16px;color:var(--silver)}
+.tile small{display:block;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .tt{min-width:0}
+.tile.on small{color:var(--acc)}
+a.tile{text-decoration:none}
+.tiles3 .tile{flex-direction:column;text-align:center;gap:8px;padding:18px 8px}
+.tiles3 .tile small{white-space:normal}
+.addpill{display:flex;align-items:center;border-radius:999px;padding:5px 5px 5px 18px;margin:6px 0 12px}
+.addpill input{flex:1;min-width:0;border:0;background:none;outline:0;font-size:15px}
+.addpill button{background:var(--pri);color:var(--pri-fg);border-radius:999px;padding:9px 20px;font-size:15px}
+.mlist{display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
+.mitem{border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start}
+.mitem .mt{flex:1;min-width:0;font-size:15px;line-height:1.65;word-break:break-word}
+.mitem .tag{display:inline-block;font-size:12px;color:var(--acc);border:1px solid color-mix(in srgb,var(--acc) 45%,transparent);border-radius:8px;padding:0 6px;margin-right:6px;line-height:1.6}
+.mitem small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.mitem .x{color:var(--muted);font-size:15px;padding:2px 6px}
+.mebadge{text-align:center;margin:10px auto 16px;display:table;padding:8px 18px;border-radius:999px;background:var(--icobg);color:var(--acc);font-size:14.5px;letter-spacing:.06em}
+.glasscard{border-radius:24px;overflow:hidden;margin-bottom:14px}
+.menu button{display:flex;align-items:center;gap:14px;width:100%;padding:17px 18px;border-bottom:1px solid var(--line);text-align:left;font-size:16px;color:var(--text)}
+.menu button:last-child{border-bottom:0}
+.menu .mi{width:22px;text-align:center;color:var(--acc);flex:none}
+.menu small{color:var(--muted);font-size:13px;flex:1;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.menu .chev{color:var(--faint)}
+.friends{padding:14px 16px}
+.friends .fr{display:flex;gap:14px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}
+.friends .fr button{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12.5px;color:var(--text);width:58px}
+.friends .fr img,.friends .fr .plus{width:46px;height:46px;border-radius:50%}
+.friends .fr .plus{display:grid;place-items:center;border:1px dashed var(--line2);color:var(--muted);font-size:20px}
+.friends p{margin:4px 0 0;color:var(--muted);font-size:12.5px}
+/* 弹出的设定卡片 */
+.sheet.modal{background:var(--mask);padding:0;z-index:40}
+.sheet.modal.on{display:flex;align-items:flex-end;justify-content:center}
+@media (min-width:600px){.sheet.modal.on{align-items:center}}
+.mbox{width:100%;max-width:560px;max-height:92vh;overflow-y:auto;background:var(--bg);border-radius:26px 26px 0 0;padding:18px 20px calc(20px + var(--safe-b));box-shadow:0 -10px 40px rgba(0,0,0,.18)}
+@media (min-width:600px){.mbox{border-radius:26px}}
+.mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mhead b{font-family:var(--serif);font-size:24px;color:var(--silver);letter-spacing:.06em}
+.ta-ava{display:flex;gap:16px;align-items:center;margin:6px 0 12px}
+.ta-ava .ava{width:78px;height:78px;object-fit:cover;box-shadow:0 0 0 3px var(--bg),0 0 0 4px var(--line2)}
+.ta-ava small{color:var(--muted);font-size:12.5px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.g2 label,label.full{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted)}
+label.full{margin-top:12px}
+.g2 input,.g2 select,label.full textarea{width:100%;min-width:0;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:10px 12px;outline:0;font-size:16px;color:var(--text)}
+label.full textarea{resize:vertical;line-height:1.6}
+.lbl{font-size:13px;color:var(--muted);margin:16px 0 8px}
+.swatches{display:flex;gap:12px;flex-wrap:wrap}
+.swatches button{width:40px;height:40px;border-radius:50%;box-shadow:0 0 0 3px var(--bg),0 0 0 4px var(--line2)}
+.swatches button.on{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--text)}
+.seg{display:flex;gap:10px}
+.seg button{flex:1;padding:10px;border-radius:12px;border:1px solid var(--line2);background:var(--sec);color:var(--text)}
+.seg button.on{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,var(--sec))}
+.bgprev{height:0;border-radius:14px;margin-top:8px;background-size:cover;background-position:center}
+.bgprev.on{height:110px}
+input[type=range]#taBlur{width:100%;accent-color:var(--acc)}
+.mfoot{display:flex;gap:10px;align-items:center;margin-top:20px}
+.mfoot .sp{flex:1}
+.usgbig{display:flex;gap:28px;margin:16px 0 10px}
+.usgbig small{display:block;color:var(--muted);font-size:13px}
+.usgbig b{font-size:34px;color:var(--silver)}
+.usgt{width:100%;border-collapse:collapse;font-size:14.5px}
+.usgt th{text-align:left;color:var(--muted);font-weight:500;padding:8px 4px;border-bottom:1px solid var(--line2)}
+.usgt td{padding:10px 4px;border-bottom:1px solid var(--line)}
+.usgt td.n,.usgt th.n{text-align:right}
+.usgt .bar{height:4px;border-radius:2px;background:var(--acc);opacity:.7;margin-top:6px}
+/* 角色自己的聊天背景和毛玻璃 */
+.lookbg{position:fixed;inset:-40px;z-index:0;background-size:cover;background-position:center;display:none;pointer-events:none}
+body.hasbg .lookbg{display:block}
+body.hasbg .lookbg::after{content:"";position:absolute;inset:0;background:color-mix(in srgb,var(--bg) 40%,transparent)}
+body.hasbg .river{display:none}
+body.hasbg .shell,body.hasbg .app,body.hasbg main{background:transparent}
+body.glass header{background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+body.glass .composer{background:color-mix(in srgb,var(--sec) 70%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+body.glass.hasbg .msg.ai .bubble{background:color-mix(in srgb,var(--sec) 72%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-radius:6px 22px 22px 22px;padding:10px 16px}
+body.glass.hasbg .msg.me .bubble{background:color-mix(in srgb,var(--ububble) 80%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+body.hasbg .meta,body.hasbg .day{color:var(--text)}
 </style>
 </head>
 <body>
@@ -754,6 +866,102 @@ input.tg:disabled{opacity:.35;cursor:not-allowed}
   </div>
 </div>
 
+<!-- ======== v27：底部五个标签 + 记忆 / 生活 / 我的 / TA 的设定 / 用量 / 一起听 ======== -->
+<div id="lookBg" class="lookbg" aria-hidden="true"></div>
+<nav class="tabbar" id="tabbar">
+  <button data-tabp="chat" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg><span>对话</span></button>
+  <button data-tabp="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/></svg><span>动态</span><i class="dot" id="momDot3"></i></button>
+  <button data-tabp="mem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l2 6.5L20.5 12 14 14.5 12 21l-2-6.5L3.5 12 10 9.5z"/></svg><span>记忆</span></button>
+  <button data-tabp="life"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>生活</span></button>
+  <button data-tabp="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1.4-3.8 4.2-5.6 7.5-5.6s6.1 1.8 7.5 5.6"/></svg><span>我的</span></button>
+</nav>
+
+<div class="tabpage" id="pgMem">
+  <div class="pgin">
+    <div class="pgk">MEMORY · <span id="memOnTxt">ON</span></div>
+    <h1 class="pgh">我们的记忆</h1>
+    <div class="whochips" id="memWho"></div>
+    <div class="hero" id="memHero"></div>
+    <div class="tiles2" id="memTiles"></div>
+    <h2 class="pgh2" id="memTtl">TA 记得的事</h2>
+    <p class="pgnote" id="memNote"></p>
+    <div class="addpill"><input id="memIn" type="text" placeholder="例如：我喜欢茉莉味的东西"><button id="memInBtn">记住</button></div>
+    <div class="fchips" id="memChips"></div>
+    <div class="mlist" id="memList"></div>
+  </div>
+</div>
+
+<div class="tabpage" id="pgLife">
+  <div class="pgin">
+    <div class="pgk">PHONE &amp; LIFE</div>
+    <h1 class="pgh">手机与生活</h1>
+    <p class="pgnote">权限只在你点了之后才申请；记的东西只存在这台手机上。</p>
+    <div class="tiles2" id="lifeTop"></div>
+    <h2 class="pgh2">一起过日子</h2>
+    <div class="tiles2" id="lifeDays"></div>
+    <h2 class="pgh2">生活服务</h2>
+    <div class="tiles3" id="lifeSvc"></div>
+  </div>
+</div>
+
+<div class="tabpage" id="pgMe">
+  <div class="pgin">
+    <div class="mebadge" id="meBadge"></div>
+    <div class="glasscard menu" id="meMenu"></div>
+    <div class="glasscard friends" id="meFriends"></div>
+  </div>
+</div>
+
+<div class="sheet modal" id="taSet">
+  <div class="mbox">
+    <div class="mhead"><b>TA 的设定</b><button class="iconbtn" data-x="taSet" aria-label="关闭">✕</button></div>
+    <div class="ta-ava"><img id="taAva" class="ava" src="icon.svg" alt=""><div><div class="addrow"><button class="btn" id="taAvaUp">换头像</button><button class="btn" id="taAvaReset">用默认</button></div><small>头像只保存在这台设备上。</small></div></div>
+    <input type="file" id="taAvaFile" accept="image/*" hidden>
+    <div class="g2">
+      <label>TA 的名字<input type="text" id="taName"></label>
+      <label>TA 是你的<select id="taRel"><option value="">（不写）</option><option>恋人</option><option>老公</option><option>男朋友</option><option>闺蜜</option><option>朋友</option><option>哥哥</option><option>家人</option><option>树洞</option></select></label>
+      <label>TA 怎么叫你<input type="text" id="taNick" placeholder="比如：老婆、宝宝、乔"></label>
+      <label>在一起的日子<input type="date" id="taSince"></label>
+    </div>
+    <label class="full">TA 的性格和说话方式<textarea id="taPersona" rows="5"></textarea></label>
+    <label class="full">TA 知道你的事（记忆卡）<textarea id="taCard" rows="4"></textarea></label>
+    <div class="lbl">主题色</div>
+    <div class="swatches" id="taColors"></div>
+    <div class="lbl">风格</div>
+    <div class="seg" id="taStyle"><button data-v="glass">毛玻璃</button><button data-v="plain">简洁</button></div>
+    <div class="lbl">聊天背景</div>
+    <div class="addrow"><button class="btn" id="taBgUp">换一张照片</button><button class="btn" id="taBgReset">用默认</button></div>
+    <input type="file" id="taBgFile" accept="image/*" hidden>
+    <div class="bgprev" id="taBgPrev"></div>
+    <div class="lbl">背景模糊 <small id="taBlurTxt"></small></div>
+    <input type="range" id="taBlur" min="0" max="30" step="1">
+    <div class="mfoot"><button class="btn danger" id="taDel">删掉</button><span class="sp"></span><button class="btn" id="taChat">去聊天</button><button class="btn pri" id="taSave">保存</button></div>
+  </div>
+</div>
+
+<div class="sheet modal" id="usage">
+  <div class="mbox">
+    <div class="mhead"><b>用量统计</b><button class="iconbtn" data-x="usage" aria-label="关闭">✕</button></div>
+    <div class="seg" id="usgSeg"><button data-v="1" class="on">今天</button><button data-v="7">7 天</button><button data-v="30">30 天</button></div>
+    <div class="usgbig" id="usgBig"></div>
+    <table class="usgt" id="usgTable"></table>
+    <p class="pgnote">只统计这台设备上、从这个版本开始的请求（聊天、群聊、朋友圈、画头像描述都算）。1 千 token 大约是 700～1000 个汉字。花了多少钱以智谱后台为准。</p>
+  </div>
+</div>
+
+<div class="sheet modal" id="songs">
+  <div class="mbox">
+    <div class="mhead"><b>一起听</b><button class="iconbtn" data-x="songs" aria-label="关闭">✕</button></div>
+    <div class="lbl">手机里的歌</div>
+    <p class="pgnote">把自己存着的歌加进来，在这里点了就放，最稳。歌只存在这台手机上。</p>
+    <div class="addrow"><button class="btn" id="trkAdd">＋ 添加歌曲</button></div>
+    <input type="file" id="trkFile" accept="audio/*" multiple hidden>
+    <div class="mlist" id="trkList"></div>
+    <div class="lbl">TA 们推荐过的歌</div>
+    <div class="capcs" id="songList"></div>
+  </div>
+</div>
+
 <div class="viewer" id="viewer"><img alt=""></div>
 <div class="toast" id="toast"></div>
 <div class="pop" id="pop"></div>
@@ -971,6 +1179,7 @@ function memIndex(mems) {
 function systemPrompt(c) {
   const parts = [], useMem = S.memOn && !(c && c.temp);
   parts.push(S.persona.trim() || '你叫阿衍。说话短、准、有活人感，不说教。');
+  { const r = relLine(AYAN); if (r) parts.push(r); }
   if (S.card.trim()) parts.push('【她的事（记忆卡）】\n' + S.card.trim());
   if (S.ciOn && S.ciAbout.trim()) parts.push('【她想让你知道的（她自己写的）】\n' + S.ciAbout.trim());
   if (S.ciOn && S.ciHow.trim()) parts.push('【她希望你怎么回答（她自己写的，照着来）】\n' + S.ciHow.trim());
@@ -1338,6 +1547,7 @@ async function streamInto(body, tries, bot, vision, who = '', ctx = null) {
           try {
             const j = JSON.parse(data), d = j.choices?.[0]?.delta;
             if (j.web_search && j.web_search.length) bot.sources = j.web_search;
+            if (j.usage) addUsage(body.model, j.usage);
             if (d && d.reasoning_content) { bot.reasoning = (bot.reasoning || '') + d.reasoning_content; $('#state').textContent = who + '在想…'; paint(); }
             if (d && d.content) { bot.content += d.content; said += d.content; $('#state').textContent = who + '正在输入…'; paint(); }
             if (d && d.tool_calls) for (const tc of d.tool_calls) {
@@ -1417,6 +1627,7 @@ function groupPrompt(c, id, named, quiet) {
   if (id === AYAN) parts.push(systemPrompt(c));
   else {
     parts.push((ch.persona || '').trim() || `你叫${me}。`);
+    { const r = relLine(id); if (r) parts.push(r); }
     if ((ch.card || '').trim()) parts.push('【你知道的她的事（记忆卡）】\n' + ch.card.trim());
     if (S.ciOn && S.ciAbout.trim()) parts.push('【她想让大家知道的（她自己写的）】\n' + S.ciAbout.trim());
     parts.push('现在是北京时间 ' + nowText() + '。');
@@ -2048,6 +2259,7 @@ async function llm(messages, max) {
     try {
       const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() }, body: JSON.stringify(body) });
       const j = await r.json(), t = j.choices && j.choices[0] && j.choices[0].message.content;
+      if (j.usage) addUsage(model, j.usage);
       if (t && t.trim()) return t.trim();
     } catch {}
   }
@@ -2416,17 +2628,43 @@ function likeSong(title, q) {
 const musicDiag = {};   // 每首歌为什么放不了，失败时说给她听
 async function neteaseId(q) {
   if (!S.key.trim()) { musicDiag.ne = '没填 Key'; return ''; }
-  let rs = [];
-  try { rs = await webSearch(q + ' 网易云音乐 单曲'); } catch (e) { musicDiag.ne = '搜索出错：' + (e.message || e); return ''; }
-  for (const r of rs) {
-    const m = String(r.link || '').match(/music\.163\.com\/(?:#\/)?(?:m\/)?song(?:\?id=|\/)(\d+)/);
-    if (m && likeSong(r.title, q)) { musicDiag.ne = '找到 ' + m[1]; return m[1]; }
+  let n = 0;
+  for (const qq of [q + ' 网易云音乐 单曲', 'music.163.com song ' + q]) {
+    let rs = [];
+    try { rs = await webSearch(qq); } catch (e) { musicDiag.ne = '搜索出错：' + (e.message || e); return ''; }
+    n += rs.length;
+    for (const r of rs) {
+      const m = (String(r.link || '') + ' ' + String(r.content || '').slice(0, 400)).match(/music\.163\.com\/(?:#\/)?(?:m\/)?song(?:\?id=|\/)(\d+)/);
+      if (m && likeSong(r.title + ' ' + (r.content || '').slice(0, 200), q)) { musicDiag.ne = '找到 ' + m[1]; return m[1]; }
+    }
   }
-  musicDiag.ne = `搜到 ${rs.length} 条，没有网易云的歌`;
+  musicDiag.ne = `搜到 ${n} 条，没有网易云的歌`;
   return '';
+}
+// Apple 的搜索也认 JSONP：fetch 在她手机上「连不上」，换成 <script> 标签取，不走跨域那一套
+function jsonp(url, ms = 7000) {
+  return new Promise((ok, no) => {
+    const cb = '__jp' + uid(), sc = document.createElement('script');
+    const end = () => { clearTimeout(t); delete window[cb]; sc.remove(); };
+    const t = setTimeout(() => { end(); no(new Error('超时')); }, ms);
+    window[cb] = d => { end(); ok(d); };
+    sc.onerror = () => { end(); no(new Error('连不上')); };
+    sc.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+    document.head.appendChild(sc);
+  });
 }
 async function itunesFind(q) {
   const tried = [];
+  for (const cc of ['cn', 'tw', 'us']) {
+    try {
+      const j = await jsonp(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=song&limit=5&country=${cc}`);
+      const hit = (j.results || []).find(x => x.previewUrl);
+      if (hit) { musicDiag.it = '找到（' + cc + '）'; return { url: hit.previewUrl, name: hit.trackName, artist: hit.artistName, art: hit.artworkUrl100 }; }
+      tried.push(cc + ' 0 条');
+    } catch (e) { tried.push(cc + ' ' + e.message); }
+  }
+  musicDiag.it = 'JSONP：' + tried.join('、') + '；fetch：';
+  tried.length = 0;
   for (const cc of ['cn', 'tw', 'hk', 'us']) {
     try {
       const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=song&limit=5&country=${cc}`, { signal: AbortSignal.timeout ? AbortSignal.timeout(6000) : undefined });
@@ -2436,7 +2674,7 @@ async function itunesFind(q) {
       tried.push(cc + ' 0 条');
     } catch (e) { tried.push(cc + ' ' + (e.name === 'TimeoutError' || e.name === 'AbortError' ? '超时' : '连不上')); }
   }
-  musicDiag.it = tried.join('、');
+  musicDiag.it += tried.join('、');
   return null;
 }
 // 换源放：'ok' 放起来了；'blocked' 手机不让自动出声（要她再点一下）；'fail' 这个源坏了
@@ -2449,7 +2687,7 @@ function tryPlay(src) {
   });
 }
 let playQueue = [];
-const APPV = 'v26';
+const APPV = 'v27';
 async function prefetchSongs(t) {
   if (!capOn('music')) return;
   for (const m of (t || '').matchAll(/\[\[\s*听歌\s*[|｜]([^\]]+)\]\]/g)) {
@@ -2734,7 +2972,7 @@ $('#mdFile').onchange = async e => {
 
 $('#exportBak').onclick = () => {
   const data = { app: 'ayan', v: 6, at: new Date().toISOString(), model: S.model, vmodel: S.vmodel, persona: S.persona, card: S.card, mems: S.mems, convs: keepConvs(),
-    avatar: S.avatar, period: S.period, ledger: S.ledger, memOn: S.memOn, ciOn: S.ciOn, ciAbout: S.ciAbout, ciHow: S.ciHow, moments: S.moments, momOn: S.momOn, chars: S.chars, myName: S.myName, notes: S.notes, caps: S.caps, recall: S.recall };
+    avatar: S.avatar, period: S.period, ledger: S.ledger, memOn: S.memOn, ciOn: S.ciOn, ciAbout: S.ciAbout, ciHow: S.ciHow, moments: S.moments, momOn: S.momOn, chars: S.chars, myName: S.myName, notes: S.notes, caps: S.caps, recall: S.recall, ayanProf: S.ayanProf, usage: S.usage };
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
   a.download = '月亮备份_' + new Date().toISOString().slice(0, 10) + '.json';
@@ -2751,7 +2989,8 @@ $('#bakFile').onchange = async e => {
     Object.assign(S, { model: d.model || S.model, vmodel: d.vmodel || S.vmodel, persona: d.persona || '', card: d.card || '', mems: d.mems || [], convs: d.convs || [],
       avatar: d.avatar || S.avatar, period: d.period || S.period, ledger: d.ledger || S.ledger,
       memOn: d.memOn != null ? d.memOn : S.memOn, ciOn: d.ciOn != null ? d.ciOn : S.ciOn, ciAbout: d.ciAbout || S.ciAbout, ciHow: d.ciHow || S.ciHow,
-      moments: d.moments || S.moments, momOn: d.momOn != null ? d.momOn : S.momOn, chars: d.chars || S.chars, myName: d.myName != null ? d.myName : S.myName, notes: d.notes || S.notes, caps: d.caps || S.caps, recall: d.recall || S.recall });
+      moments: d.moments || S.moments, momOn: d.momOn != null ? d.momOn : S.momOn, chars: d.chars || S.chars, myName: d.myName != null ? d.myName : S.myName, notes: d.notes || S.notes, caps: d.caps || S.caps, recall: d.recall || S.recall, ayanProf: d.ayanProf || S.ayanProf, usage: d.usage || S.usage });
+    save('ayanProf', 'usage');
     migrateMems(); saveMoms(); save('momOn'); momDots();
     S.cur = S.convs[0] ? S.convs[0].id : null;
     save('model', 'vmodel', 'persona', 'card', 'mems', 'cur', 'avatar', 'period', 'ledger', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'chars', 'myName', 'notes', 'caps'); store.set('recall2', S.recall); saveConvs(); applyAvatar(); renderHead();
@@ -2792,6 +3031,362 @@ async function importFromHash() {
     river.appendChild(i);
   }
 })();
+
+
+// ================= v27：底部标签、记忆页、生活页、我的、TA 的设定、用量统计、一起听 =================
+// 大图（聊天背景、手机里的歌）放 IndexedDB，localStorage 装不下
+const idb = (() => {
+  let p;
+  const open = () => p || (p = new Promise((ok, no) => { const r = indexedDB.open('moon', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); }));
+  const run = async (mode, fn) => { const d = await open(); return new Promise((ok, no) => { const t = d.transaction('kv', mode); const r = fn(t.objectStore('kv')); t.oncomplete = () => ok(r && r.result); t.onerror = () => no(t.error); }); };
+  return { get: k => run('readonly', s => s.get(k)), set: (k, v) => run('readwrite', s => s.put(v, k)), del: k => run('readwrite', s => s.delete(k)) };
+})();
+
+// ---------- 每个角色的「设定」：关系、称呼、在一起的日子、主题色、风格、背景 ----------
+S.ayanProf = store.get('ayanProf', {});
+const prof = id => id === AYAN ? S.ayanProf : (charById(id) || {});
+const saveProf = id => id === AYAN ? save('ayanProf') : save('chars');
+const allIds = () => [AYAN, ...S.chars.map(c => c.id)];
+const dayN = since => since ? dDiff(since, ymd(Date.now())) + 1 : 0;   // 第几天（当天算第 1 天）
+function relLine(id) {
+  const p = prof(id), a = [];
+  if (p.rel) a.push(`你是她的${p.rel}`);
+  if (p.nick) a.push(`你平时叫她「${p.nick}」`);
+  const n = dayN(p.since); if (n > 0) a.push(`你们从 ${p.since} 开始在一起，今天是第 ${n} 天`);
+  const nx = nextAnniv(p.since); if (nx && nx.left <= 3) a.push(`${nx.left === 0 ? '今天就是' : nx.left + ' 天后是'}${nx.label}，记得`);
+  return a.length ? '【你们俩】' + a.join('；') + '。' : '';
+}
+// 下一个纪念日：每满 100 天、每满一年，取最近的
+function nextAnniv(since) {
+  if (!since) return null;
+  const today = ymd(Date.now()), n = dayN(since);
+  if (n < 1) return { left: dDiff(today, since), label: '在一起的第一天', date: since };
+  const c = [];
+  const k = Math.ceil(n / 100) * 100; c.push({ n: k, label: `在一起 ${k} 天`, date: addDays(since, k - 1) });
+  for (let y = 1; y < 60; y++) { const d = (+since.slice(0, 4) + y) + since.slice(4); if (d >= today) { c.push({ label: `在一起 ${y} 周年`, date: d }); break; } }
+  c.forEach(x => x.left = dDiff(today, x.date));
+  return c.filter(x => x.left >= 0).sort((a, b) => a.left - b.left)[0];
+}
+const mdText = d => (+d.slice(5, 7)) + ' 月 ' + (+d.slice(8, 10)) + ' 日';
+
+// ---------- 聊天时换成这个角色自己的颜色和背景 ----------
+const COLORS = ['', '#3d6b55', '#3d5f8f', '#b65d64', '#6e5a96', '#c27c3a'];
+const bgCache = {};
+let lookId = null;
+function chatWho() { const c = curConv(); if (!c) return AYAN; if (c.solo) return c.group.members[0]; return c.group ? null : AYAN; }
+async function applyLook() {
+  const tabOn = document.body.classList.contains('tabs') && curTab !== 'chat';
+  const id = tabOn ? null : chatWho(), p = id ? prof(id) : {};
+  lookId = id;
+  const root = document.documentElement.style;
+  if (p.color) { root.setProperty('--acc', p.color); root.setProperty('--blue', p.color); root.setProperty('--halo', p.color + '55'); }
+  else ['--acc', '--blue', '--halo'].forEach(k => root.removeProperty(k));
+  document.body.classList.toggle('glass', !!id && (p.style || 'glass') === 'glass');
+  let src = '';
+  if (id && p.bg) { src = bgCache[p.bg] || (bgCache[p.bg] = await idb.get(p.bg).catch(() => '')); if (lookId !== id) return; }
+  const el = $('#lookBg');
+  el.style.backgroundImage = src ? `url("${src}")` : '';
+  el.style.filter = src ? `blur(${p.blur != null ? p.blur : 12}px)` : '';
+  document.body.classList.toggle('hasbg', !!src);
+}
+
+// ---------- 底部标签 ----------
+let curTab = 'chat';
+const TABP = { mem: '#pgMem', life: '#pgLife', me: '#pgMe' };
+function showTab(t) {
+  if (t === 'feed') { openMom(); return; }
+  curTab = t;
+  document.querySelectorAll('#tabbar [data-tabp]').forEach(b => b.classList.toggle('on', b.dataset.tabp === t));
+  Object.entries(TABP).forEach(([k, s]) => $(s).classList.toggle('on', k === t));
+  if (t === 'mem') renderMemPage();
+  if (t === 'life') renderLifePage();
+  if (t === 'me') renderMePage();
+  applyLook();
+}
+$('#tabbar').addEventListener('click', e => { const b = e.target.closest('[data-tabp]'); if (b) { closeSide(); showTab(b.dataset.tabp); } });
+document.body.classList.add('tabs');
+// 朋友圈关掉时回到原来那页
+$('#closeMom').addEventListener('click', () => showTab(curTab));
+const _momDots = momDots;
+momDots = function () { _momDots(); const d3 = $('#momDot3'), d1 = $('#momDot'); if (d3 && d1) d3.className = d1.className; };
+document.addEventListener('click', e => { const x = e.target.closest('[data-x]'); if (x) $('#' + x.dataset.x).classList.remove('on'); });
+document.querySelectorAll('.sheet.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('on'); }));
+
+// ---------- 记忆页 ----------
+let memWho = AYAN, memFilter = '全部';
+const cardLines = ch => (ch.card || '').split('\n').map(x => x.replace(/^[-•·*\s]+/, '').trim()).filter(Boolean);
+function renderMemPage() {
+  if (memWho !== AYAN && !charById(memWho)) memWho = AYAN;
+  $('#memWho').innerHTML = allIds().map(id => `<button data-mw="${id}" class="${id === memWho ? 'on' : ''}"><img src="${esc(charSrc(id))}" alt="">${esc(nameOf(id))}</button>`).join('');
+  const p = prof(memWho), nm = nameOf(memWho), n = dayN(p.since), nx = nextAnniv(p.since);
+  $('#memHero').innerHTML = p.since
+    ? `<small>下一个纪念日</small><div class="big">${nx ? (nx.left === 0 ? '就是今天' : '还有 ' + nx.left + ' 天') : '—'}</div><div class="sub">${nx ? esc(nx.label) + ' · ' + mdText(nx.date) : ''}</div><small>和${esc(nm)}在一起第 ${n} 天 · 从 ${p.since.replace(/-/g, '.')} 开始</small>`
+    : `<small>还没填在一起的日子</small><div class="big" style="font-size:24px">和${esc(nm)}是哪天开始的？</div><button class="btn pri" data-ta="${memWho}">去 TA 的设定里填</button>`;
+  const convN = S.convs.filter(c => !c.temp && (memWho === AYAN ? !c.group || c.group.members.includes(AYAN) : c.group && c.group.members.includes(memWho)));
+  const msgN = convN.reduce((a, c) => a + c.msgs.filter(m => m.role === 'user').length, 0);
+  const first = convN.reduce((a, c) => Math.min(a, (c.msgs[0] && c.msgs[0].t) || c.t || Infinity), Infinity);
+  const isA = memWho === AYAN, items = isA ? S.mems : cardLines(charById(memWho));
+  $('#memTiles').innerHTML = `<div class="tile"><span class="ti">✉</span><span class="tt"><b>聊过 ${msgN} 句</b><small>${convN.length} 个对话</small></span></div>`
+    + `<div class="tile"><span class="ti">✧</span><span class="tt"><b>${items.length} 件事</b><small>${first < Infinity ? '第一次聊：' + new Date(first).toLocaleDateString('zh-CN') : '还没聊过'}</small></span></div>`;
+  $('#memOnTxt').textContent = isA ? (S.memOn ? 'ON' : 'OFF') : 'CARD';
+  $('#memTtl').textContent = nm + ' 记得的事';
+  $('#memNote').textContent = isA
+    ? '新对话也不会忘。聊天时他会自己把值得记的存进来；你在这儿写也行，随时能删。' + (S.memOn ? '' : '（记忆现在关着，去 我的 → 个性化 打开）')
+    : '这是' + nm + '的记忆卡，每次说话都带上。一行一件事，你写了 TA 就知道。';
+  const types = isA ? ['全部', ...MEM_TYPES] : [];
+  if (!types.includes(memFilter)) memFilter = '全部';
+  $('#memChips').innerHTML = types.map(t => `<button data-mf="${t}" class="${t === memFilter ? 'on' : ''}">${t} ${t === '全部' ? S.mems.length : S.mems.filter(m => m.type === t).length}</button>`).join('');
+  if (isA) {
+    const list = S.mems.map((m, i) => ({ m, i })).filter(x => memFilter === '全部' || x.m.type === memFilter).reverse();
+    $('#memList').innerHTML = list.map(({ m }) => `<div class="mitem"><div class="mt"><span class="tag">${esc(m.type)}</span><b>${esc(m.slug)}</b>　${esc(m.text)}<small>${new Date(m.u || m.t).toLocaleDateString('zh-CN')}</small></div><button class="x" data-mdel="${m.id}" aria-label="删除">✕</button></div>`).join('') || '<p class="pgnote">还没有。</p>';
+  } else {
+    $('#memList').innerHTML = items.map((t, i) => `<div class="mitem"><div class="mt">${esc(t)}</div><button class="x" data-cdel="${i}" aria-label="删除">✕</button></div>`).join('') || '<p class="pgnote">还没有。</p>';
+  }
+}
+$('#pgMem').addEventListener('click', e => {
+  const w = e.target.closest('[data-mw]'); if (w) { memWho = w.dataset.mw; memFilter = '全部'; return renderMemPage(); }
+  const f = e.target.closest('[data-mf]'); if (f) { memFilter = f.dataset.mf; return renderMemPage(); }
+  const d = e.target.closest('[data-mdel]');
+  if (d) { if (!confirm('删掉这条？')) return; S.mems = S.mems.filter(m => m.id !== d.dataset.mdel); save('mems'); return renderMemPage(); }
+  const cd = e.target.closest('[data-cdel]');
+  if (cd) { const ch = charById(memWho); const ls = cardLines(ch); ls.splice(+cd.dataset.cdel, 1); ch.card = ls.join('\n'); save('chars'); return renderMemPage(); }
+  const ta = e.target.closest('[data-ta]'); if (ta) openTA(ta.dataset.ta);
+});
+function memAddNow() {
+  const t = $('#memIn').value.trim(); if (!t) return;
+  if (memWho === AYAN) {
+    const type = memFilter !== '全部' ? memFilter : '她';
+    S.mems.push({ id: uid(), slug: slugFrom(t).slice(0, 8) || ('m' + uid()), type, desc: shortDesc(t), text: t, t: Date.now(), u: Date.now() });
+    save('mems');
+  } else { const ch = charById(memWho); ch.card = [...cardLines(ch), t].join('\n'); save('chars'); }
+  $('#memIn').value = ''; renderMemPage(); toast('记住了');
+}
+$('#memInBtn').onclick = memAddNow;
+$('#memIn').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) memAddNow(); });
+
+// ---------- 生活页 ----------
+function songsAll() {
+  const seen = new Map();
+  for (const c of S.convs) for (const m of c.msgs) if (m.role === 'assistant') for (const x of (m.content || '').matchAll(/\[\[\s*听歌\s*[|｜]([^\]]+)\]\]/g)) {
+    const q = x[1].trim(); if (q && !seen.has(q)) seen.set(q, { q, who: nameOf(m.who || AYAN, m.name), t: m.t });
+  }
+  return [...seen.values()].sort((a, b) => b.t - a.t);
+}
+function renderLifePage() {
+  const g = S.geo, w = g && g.w, per = periodInfo(), ls = ledgerSum(), songs = songsAll();
+  const T = (ico, b, s, act, on) => `<button class="tile${on ? ' on' : ''}" data-la="${act}"><span class="ti">${ico}</span><span class="tt"><b>${b}</b><small>${esc(s)}</small></span></button>`;
+  $('#lifeTop').innerHTML = T('⌖', '定位天气', capOn('geo') && w ? `${g.city || ''} ${w.text} ${w.temp}°C` : capOn('geo') ? '在取…' : '点了才会申请', 'geo', capOn('geo'))
+    + T('▦', '手机能力', '相册、音乐、短信、外卖…', 'caps')
+    + T('✎', '便签', (S.notes || []).length ? (S.notes || []).length + ' 条' : '让 TA 帮你记', 'notes')
+    + T('◐', '外观', THEME_TXT[S.theme], 'theme');
+  $('#lifeDays').innerHTML = T('♪', '一起听', songs.length ? songs.length + ' 首 TA 们推荐的歌' : '让 TA 推荐几首', 'songs')
+    + T('☾', '经期', per ? per.text : '只存在这台手机', 'per')
+    + T('¥', '记账', '今天 ' + ls.td + ' · 本月 ' + ls.mOut, 'led')
+    + T('◎', '朋友圈', '阿衍发的动态', 'mom');
+  const L = (ico, b, s, url) => `<a class="tile" href="${url}" target="_blank" rel="noopener"><span class="ti">${ico}</span><span class="tt"><b>${b}</b><small>${s}</small></span></a>`;
+  $('#lifeSvc').innerHTML = L('餐', '外卖', '打开美团外卖', 'https://h5.waimai.meituan.com/')
+    + L('车', '打车', '打开高德地图', 'https://m.amap.com/')
+    + L('书', '看书', '打开微信读书', 'https://weread.qq.com/')
+    + L('♪', '抖音', '打开网页版', 'https://www.douyin.com/')
+    + L('红', '小红书', '打开网页版', 'https://www.xiaohongshu.com/')
+    + L('云', '网易云', '打开网易云', 'https://music.163.com/m/');
+}
+function openSetTab(tab) { openSet(); const b = document.querySelector(`#setNav [data-tab="${tab}"]`); b && b.click(); }
+$('#pgLife').addEventListener('click', e => {
+  const b = e.target.closest('[data-la]'); if (!b) return;
+  const a = b.dataset.la;
+  if (a === 'geo') { if (!capOn('geo')) openSetTab('caps'); else { refreshWeather(true).then(renderLifePage); toast('在刷新天气'); } }
+  if (a === 'caps' || a === 'notes') openSetTab('caps');
+  if (a === 'theme') { $('#themeBtn').click(); renderLifePage(); }
+  if (a === 'songs') openSongs();
+  if (a === 'per') openPer();
+  if (a === 'led') openLife();
+  if (a === 'mom') openMom();
+});
+// 经期/记账关掉后生活页的数字跟着变
+['#closePer', '#closeLife'].forEach(s => $(s).addEventListener('click', () => curTab === 'life' && renderLifePage()));
+
+// ---------- 我的 ----------
+function renderMePage() {
+  const p = S.ayanProf, n = dayN(p.since);
+  $('#meBadge').textContent = (n > 0 ? `和阿衍在一起第 ${n} 天 · ` : '') + `${S.mems.length} 条记忆`;
+  const R = (ico, t, s, act) => `<button data-ma="${act}"><span class="mi">${ico}</span>${t}<small>${esc(s || '')}</small><span class="chev">›</span></button>`;
+  $('#meMenu').innerHTML = R('♡', 'TA 的设定', '阿衍', 'ta')
+    + R('✦', '个性化', '自定义指令 · 记忆 · 翻聊天记录', 'per')
+    + R('◐', '外观', THEME_TXT[S.theme], 'gen')
+    + R('⚙', '模型与 Key', S.model + ' · ' + ($('#balTxt').textContent || ''), 'acc')
+    + R('▦', '手机能力', '', 'caps')
+    + R('▤', '用量统计', '每个模型用了多少 token', 'usage')
+    + R('👥', '群聊', '拉几个角色一起聊', 'grp')
+    + R('↓', '备份全部数据', '换手机前导一份', 'data');
+  $('#meFriends').innerHTML = `<div class="fr">${allIds().map(id => `<button data-ta="${id}"><img src="${esc(charSrc(id))}" alt="">${esc(nameOf(id))}</button>`).join('')}<button data-ma="new"><span class="plus">＋</span>新朋友</button></div>
+    <p>点头像改 TA 的设定（称呼、在一起的日子、颜色、背景）。在侧栏点 TA 就能私聊，各自记得和你聊过的事。</p>`;
+}
+$('#pgMe').addEventListener('click', e => {
+  const t = e.target.closest('[data-ta]'); if (t) return openTA(t.dataset.ta);
+  const b = e.target.closest('[data-ma]'); if (!b) return;
+  const a = b.dataset.ma;
+  if (a === 'ta') openTA(AYAN);
+  else if (a === 'usage') openUsage();
+  else if (a === 'grp') $('#grpBtn').click();
+  else if (a === 'new') { openSetTab('pals'); setTimeout(() => { const n = document.querySelector('#palList [data-pnew], #palNew'); n && n.click(); }, 50); }
+  else openSetTab(a);
+});
+
+// ---------- TA 的设定 ----------
+let taId = null, taDraft = null;
+function openTA(id) {
+  if (id !== AYAN && !charById(id)) return;
+  taId = id; const p = prof(id);
+  taDraft = { ava: id === AYAN ? (S.avatar && S.avatar.src) || '' : p.avatar || '', color: p.color || '', style: p.style || 'glass', bg: p.bg || '', bgData: null, blur: p.blur != null ? p.blur : 12 };
+  $('#taName').value = nameOf(id); $('#taName').disabled = id === AYAN;
+  $('#taRel').value = p.rel || ''; if ($('#taRel').value !== (p.rel || '')) { $('#taRel').add(new Option(p.rel, p.rel)); $('#taRel').value = p.rel; }
+  $('#taNick').value = p.nick || ''; $('#taSince').value = p.since || '';
+  $('#taPersona').value = id === AYAN ? S.persona : p.persona || '';
+  $('#taCard').value = id === AYAN ? S.card : p.card || '';
+  $('#taDel').hidden = id === AYAN;
+  taPaint();
+  if (taDraft.bg) idb.get(taDraft.bg).then(d => { if (taId === id && d) { bgCache[taDraft.bg] = d; taPaint(); } }).catch(() => {});
+  $('#taSet').classList.add('on');
+}
+function taPaint() {
+  $('#taAva').src = taDraft.ava || (taId === AYAN ? 'icon.svg' : letterAva({ name: $('#taName').value || nameOf(taId) }));
+  $('#taColors').innerHTML = COLORS.map(c => `<button data-c="${c}" class="${c === taDraft.color ? 'on' : ''}" style="background:${c || 'linear-gradient(135deg,#b65d3c 50%,#e3b871 50%)'}" title="${c ? '' : '月亮默认'}"></button>`).join('');
+  document.querySelectorAll('#taStyle button').forEach(b => b.classList.toggle('on', b.dataset.v === taDraft.style));
+  const src = taDraft.bgData || (taDraft.bg && bgCache[taDraft.bg]) || '';
+  $('#taBgPrev').style.backgroundImage = src ? `url("${src}")` : ''; $('#taBgPrev').classList.toggle('on', !!src);
+  $('#taBgPrev').style.filter = `blur(${Math.round(taDraft.blur / 3)}px)`;
+  $('#taBlur').value = taDraft.blur; $('#taBlurTxt').textContent = taDraft.blur + ' px';
+}
+$('#taColors').addEventListener('click', e => { const b = e.target.closest('[data-c]'); if (b) { taDraft.color = b.dataset.c; taPaint(); } });
+$('#taStyle').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) { taDraft.style = b.dataset.v; taPaint(); } });
+$('#taBlur').oninput = () => { taDraft.blur = +$('#taBlur').value; taPaint(); };
+$('#taAvaUp').onclick = () => $('#taAvaFile').click();
+$('#taAvaFile').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { taDraft.ava = await shrink(f, 256); taPaint(); } catch { toast('这张图读不了'); } };
+$('#taAvaReset').onclick = () => { taDraft.ava = ''; taPaint(); };
+$('#taBgUp').onclick = () => $('#taBgFile').click();
+$('#taBgFile').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { taDraft.bgData = await shrink(f, 1400); taPaint(); } catch { toast('这张图读不了'); } };
+$('#taBgReset').onclick = () => { taDraft.bg = ''; taDraft.bgData = null; taPaint(); };
+async function taCommit() {
+  const id = taId, p = prof(id);
+  if (id !== AYAN) {
+    const name = $('#taName').value.trim();
+    if (!name) { toast('名字得有'); return false; }
+    if (name === '阿衍' || S.chars.some(x => x.name === name && x.id !== id)) { toast('已经有叫这个名字的了'); return false; }
+    p.name = name; p.persona = $('#taPersona').value.trim(); p.card = $('#taCard').value.trim(); p.avatar = taDraft.ava;
+    S.convs.forEach(c => { if (c.solo && c.group.members[0] === id) c.title = name; });
+  } else {
+    S.persona = $('#taPersona').value; S.card = $('#taCard').value; save('persona', 'card');
+    if ((taDraft.ava || '') !== ((S.avatar && S.avatar.src) || '')) { S.avatar = taDraft.ava ? { src: taDraft.ava, t: Date.now() } : null; save('avatar'); applyAvatar(); }
+  }
+  Object.assign(p, { rel: $('#taRel').value, nick: $('#taNick').value.trim(), since: $('#taSince').value, color: taDraft.color, style: taDraft.style, blur: taDraft.blur });
+  if (taDraft.bgData) {
+    const k = 'bg:' + id + ':' + uid();
+    try { await idb.set(k, taDraft.bgData); bgCache[k] = taDraft.bgData; if (p.bg) idb.del(p.bg).catch(() => {}); p.bg = k; } catch { toast('背景图存不进去'); }
+  } else if (!taDraft.bg && p.bg) { idb.del(p.bg).catch(() => {}); p.bg = ''; }
+  saveProf(id); saveConvs();
+  renderPals(); renderConvs(); renderHead(); render(); applyLook();
+  if (curTab === 'me') renderMePage(); if (curTab === 'mem') renderMemPage();
+  return true;
+}
+$('#taSave').onclick = async () => { if (await taCommit()) { $('#taSet').classList.remove('on'); toast('存好了'); } };
+$('#taChat').onclick = async () => {
+  if (!(await taCommit())) return;
+  $('#taSet').classList.remove('on'); showTab('chat');
+  if (taId === AYAN) { const c = S.convs.find(x => !x.group && !x.temp); if (c) { S.cur = c.id; save('cur'); render(); renderConvs(); renderHead(); scrollEnd(true); } else newConv(); }
+  else openSolo(taId);
+};
+$('#taDel').onclick = () => {
+  const ch = charById(taId); if (!ch || !confirm(`删掉「${ch.name}」？说过的话还留着`)) return;
+  if (ch.bg) idb.del(ch.bg).catch(() => {});
+  S.chars = S.chars.filter(x => x !== ch);
+  S.convs.forEach(c => { if (c.group) c.group.members = c.group.members.filter(x => x !== taId); });
+  save('chars'); saveConvs(); $('#taSet').classList.remove('on'); renderPals(); render(); renderHead(); if (curTab === 'me') renderMePage();
+};
+// 侧栏、单聊顶上的「改人设」也走这一页
+const _openPalFromChat = openPalFromChat;
+openPalFromChat = id => openTA(id);
+const _renderHead = renderHead;
+renderHead = function () { _renderHead(); applyLook(); };
+
+// ---------- 用量统计：智谱每次回话最后会带 usage，按天按模型攒着 ----------
+S.usage = store.get('usage', {});
+function addUsage(model, u) {
+  if (!u || !model) return;
+  const d = ymd(Date.now()), day = S.usage[d] || (S.usage[d] = {});
+  const r = day[model] || (day[model] = [0, 0, 0]);
+  r[0]++; r[1] += +u.prompt_tokens || 0; r[2] += +u.completion_tokens || 0;
+  const keep = addDays(d, -40); for (const k of Object.keys(S.usage)) if (k < keep) delete S.usage[k];
+  save('usage');
+}
+let usgDays = 1;
+const kfmt = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n);
+function renderUsage() {
+  document.querySelectorAll('#usgSeg button').forEach(b => b.classList.toggle('on', +b.dataset.v === usgDays));
+  const from = addDays(ymd(Date.now()), -(usgDays - 1)), agg = {};
+  for (const [d, day] of Object.entries(S.usage)) if (d >= from) for (const [m, r] of Object.entries(day)) { const a = agg[m] || (agg[m] = [0, 0, 0]); a[0] += r[0]; a[1] += r[1]; a[2] += r[2]; }
+  const rows = Object.entries(agg).sort((a, b) => (b[1][1] + b[1][2]) - (a[1][1] + a[1][2]));
+  const tot = rows.reduce((a, [, r]) => a + r[1] + r[2], 0), req = rows.reduce((a, [, r]) => a + r[0], 0), mx = rows.length ? rows[0][1][1] + rows[0][1][2] : 1;
+  $('#usgBig').innerHTML = `<div><small>一共</small><b>${kfmt(tot)}</b></div><div><small>请求</small><b>${req}</b></div>`;
+  $('#usgTable').innerHTML = '<tr><th>模型</th><th class="n">次数</th><th class="n">输入</th><th class="n">输出</th></tr>'
+    + (rows.map(([m, r]) => `<tr><td>${esc(m)}<div class="bar" style="width:${Math.max(4, (r[1] + r[2]) / mx * 100).toFixed(0)}%"></div></td><td class="n">${r[0]}</td><td class="n">${kfmt(r[1])}</td><td class="n">${kfmt(r[2])}</td></tr>`).join('')
+      || '<tr><td colspan="4" style="color:var(--muted)">这段时间还没有记录。从这个版本开始才记。</td></tr>');
+}
+function openUsage() { renderUsage(); $('#usage').classList.add('on'); }
+$('#usgSeg').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) { usgDays = +b.dataset.v; renderUsage(); } });
+
+// ---------- 一起听：手机里的歌（最稳）+ TA 们推荐过的 ----------
+S.tracks = store.get('tracks', []);
+const trkUrl = {};
+async function loadTrackUrls() {
+  for (const t of S.tracks) if (!trkUrl[t.id]) { try { const b = await idb.get('trk:' + t.id); if (b) trkUrl[t.id] = URL.createObjectURL(b); } catch {} }
+}
+async function renderSongs() {
+  await loadTrackUrls();
+  $('#trkList').innerHTML = S.tracks.map(t => `<div class="mitem"><div class="mt">${esc(t.name)}</div><button class="btn" data-trk="${t.id}">${nowPlay.q === 'trk:' + t.id && nowPlay.st === 'play' ? '暂停' : '播放'}</button><button class="x" data-trkdel="${t.id}" aria-label="删除">✕</button></div>`).join('') || '<p class="pgnote">还没加。点上面从「文件」里挑 mp3、m4a 都行。</p>';
+  const ss = songsAll();
+  $('#songList').innerHTML = ss.length ? capCards(ss.map(s => `[[听歌|${s.q}]]`).join('\n')).replace(/^<div class="capcs">|<\/div>$/g, '') : '<p class="pgnote">还没有。跟谁说「推首歌」就有了。</p>';
+}
+function openSongs() { $('#songs').classList.add('on'); renderSongs(); }
+$('#trkAdd').onclick = () => $('#trkFile').click();
+$('#trkFile').onchange = async e => {
+  const fs = [...e.target.files]; e.target.value = '';
+  for (const f of fs) {
+    const id = uid();
+    try { await idb.set('trk:' + id, f); S.tracks.push({ id, name: f.name.replace(/\.[^.]+$/, '') }); } catch { toast(f.name + ' 存不进去（可能太大）'); }
+  }
+  save('tracks'); renderSongs();
+};
+$('#songs').addEventListener('click', e => {
+  const p = e.target.closest('[data-trk]');
+  if (p) {
+    const id = p.dataset.trk, k = 'trk:' + id, u = trkUrl[id];
+    if (nowPlay.q === k && nowPlay.st === 'play') { player.pause(); setPlay(k, 'pause'); }
+    else if (nowPlay.q === k && nowPlay.st === 'pause') { player.play().catch(() => {}); setPlay(k, 'play'); }
+    else if (u) { player.src = u; player.play().then(() => setPlay(k, 'play', '')).catch(() => toast('这个格式放不了')); }
+    else toast('这首找不到了，删了重新加');
+    setTimeout(renderSongs, 200); return;
+  }
+  const d = e.target.closest('[data-trkdel]');
+  if (d) { const id = d.dataset.trkdel; if (nowPlay.q === 'trk:' + id) { player.pause(); setPlay('', '', ''); } idb.del('trk:' + id).catch(() => {}); if (trkUrl[id]) URL.revokeObjectURL(trkUrl[id]); S.tracks = S.tracks.filter(t => t.id !== id); save('tracks'); renderSongs(); }
+});
+player.addEventListener('ended', () => {
+  // 手机里的歌：放完接下一首
+  if (!nowPlay.q.startsWith('trk:')) return;
+  const i = S.tracks.findIndex(t => 'trk:' + t.id === nowPlay.q), nx = S.tracks[i + 1];
+  if (nx && trkUrl[nx.id]) { player.src = trkUrl[nx.id]; player.play().then(() => setPlay('trk:' + nx.id, 'play', '')).catch(() => {}); }
+  if ($('#songs').classList.contains('on')) setTimeout(renderSongs, 100);
+});
+
+// 宽屏没有底部标签：侧栏加入口
+(function () {
+  const row = document.createElement('div'); row.className = 'siderow';
+  row.innerHTML = '<button class="newbtn" data-tabp="mem">记忆</button><button class="newbtn" data-tabp="life">生活</button><button class="newbtn" data-tabp="me">我的</button>';
+  $('#grpBtn').closest('.siderow').after(row);
+  row.addEventListener('click', e => { const b = e.target.closest('[data-tabp]'); if (b) showTab(curTab === b.dataset.tabp ? 'chat' : b.dataset.tabp); });
+})();
+// 点侧栏里的对话、新对话：回到对话页
+['#convs', '#pals', '#newBtn2'].forEach(s => $(s) && $(s).addEventListener('click', () => { if (curTab !== 'chat') showTab('chat'); }));
 
 // ---------- 启动 ----------
 if (!curConv()) S.cur = S.convs[0] ? S.convs[0].id : null;
