@@ -699,7 +699,7 @@ body.hasbg .meta,body.hasbg .day{color:var(--text)}
 
 <div class="sheet setx" id="sheet">
  <div class="setbox">
-  <div class="sethead"><b>设置</b><button class="iconbtn" id="closeSet" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="sethead"><b>设置 <small id="appv" style="font-weight:400;font-size:12px;color:var(--muted)"></small></b><button class="iconbtn" id="closeSet" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <nav class="setnav" id="setNav">
     <button data-tab="gen" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>常规</button>
     <button data-tab="per"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.3 7.2 17.9l.9-5.4-3.9-3.8 5.4-.8z"/></svg>个性化</button>
@@ -2718,7 +2718,7 @@ function tryPlay(src) {
 // v28：她手机上 Apple 连不上、智谱也搜不到网易云的歌。改走 QQ 音乐：它的搜索认 JSONP（国内直连），
 // 找到歌就开 QQ 音乐自己的手机播放页（免费歌整首、VIP 歌它自己给试听）。真正在月亮里放的，是「一起听」里她加的手机里的歌
 let playQueue = [];
-const APPV = 'v33';
+const APPV = 'v34';
 const qqPlay = mid => 'https://i.y.qq.com/v8/playsong.html?songmid=' + mid;
 async function qqFind(q) {
   const j = await jsonp(`https://c.y.qq.com/soso/fcgi-bin/client_search_cp?w=${encodeURIComponent(q)}&format=jsonp&p=1&n=5&cr=1`, 7000, 'jsonpCallback');
@@ -3426,7 +3426,17 @@ if (S.avatar && S.avatar.gen && Date.now() - S.avatar.t > 6.5 * 864e5) genAvatar
 importFromHash();
 momDots(); setTimeout(momCatchUp, 2500); loadTrackUrls();
 if (!S.key && !location.hash.startsWith('#pack=')) setTimeout(() => toast(isWide() ? '先点左下角「设置」，填 Key、导入人格包' : '先点左上角 → 设置，填 Key、导入人格包'), 600);
-if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+$('#appv').textContent = APPV;
+// v34：新版本装好了就自动刷一次，不用她关两遍才换上（只在打开后 15 秒内、而且原来就有旧版本时）
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  const hadOld = !!navigator.serviceWorker.controller, t0 = Date.now();
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadOld || reloaded || Date.now() - t0 > 15000 || busy) return;
+    reloaded = true; location.reload();
+  });
+  navigator.serviceWorker.register('sw.js').then(r => r.update && r.update()).catch(() => {});
+}
 </script>
 </body>
 </html>
