@@ -2389,7 +2389,7 @@ function capCards(t) {
       const st = nowPlay.q === v ? nowPlay.st : '', hit = musicCache[v] || {};
       const ico = st === 'load' ? '…' : st === 'play' ? '❚❚' : '▶';
       const sub = nowPlay.q === v && nowPlay.label ? `<small>${esc(nowPlay.label)}</small>` : '';
-      out.push(`<div class="capc music${st ? ' on' : ''}"><button class="cci mplay" data-play="${esc(v)}" aria-label="播放">${ico}</button><span class="cct">${esc(v)}${sub}</span><a href="${esc(hit.ne ? 'https://music.163.com/m/song?id=' + hit.ne : CAP_LINKS.netease(v))}" target="_blank" rel="noopener">网易云</a><a href="${esc(CAP_LINKS.qq(v))}" target="_blank" rel="noopener">QQ 音乐</a></div>`);
+      out.push(`<div class="capc music${st ? ' on' : ''}"><button class="cci mplay" data-play="${esc(v)}" aria-label="播放">${ico}</button><span class="cct">${esc(v)}${sub}</span><a href="${esc(hit.ne ? neSong(hit.ne) : CAP_LINKS.netease(v))}" target="_blank" rel="noopener" data-ne="${esc(v)}">网易云</a><a href="${esc(CAP_LINKS.qq(v))}" target="_blank" rel="noopener">QQ 音乐</a></div>`);
     }
     if (k === '外卖' && capOn('food')) out.push(`<div class="capc"><span class="cci">⌂</span><span class="cct">${esc(v)}</span><a href="${esc(CAP_LINKS.meituan())}" target="_blank" rel="noopener">美团</a><a href="${esc(CAP_LINKS.amap(v))}" target="_blank" rel="noopener">附近</a></div>`);
     if (k === '短信' && capOn('sms')) out.push(`<div class="capc sms"><span class="cci">✉</span><span class="cct">${esc(v)}</span><a href="${esc(CAP_LINKS.sms(v))}">发短信</a><button data-copy="${esc(v)}">复制</button></div>`);
@@ -2465,9 +2465,24 @@ async function playSong(q) {
   }
   setPlay(q, 'play', label);
 }
+const neSong = id => 'https://music.163.com/m/song?id=' + id;
+// 「网易云」：手机上网易云的搜索页是空白的，所以先找到这首歌的 id，直接开歌的页面（那页能放、也能跳 App）
+// iPhone 只认点下去那一下开的窗口：先开个空窗口，找到了再把它指过去
+async function openNetease(q) {
+  const hit = musicCache[q];
+  if (hit && hit.ne) return window.open(neSong(hit.ne), '_blank');
+  const w = window.open('about:blank', '_blank');
+  toast('在网易云里找这首…');
+  const id = await neteaseId(q);
+  musicCache[q] = { ...(musicCache[q] || {}), ne: id }; store.set('musicCache', musicCache); render();
+  const url = id ? neSong(id) : CAP_LINKS.qq(q);
+  if (!id) toast('网易云没找到，换 QQ 音乐搜');
+  if (w && !w.closed) w.location.href = url; else location.href = url;
+}
 player.addEventListener('ended', () => { if (nowPlay.st === 'play') setPlay(nowPlay.q, '', ''); });
 document.addEventListener('click', e => {
   const p = e.target.closest('[data-play]'); if (p) return playSong(p.dataset.play);
+  const ne = e.target.closest('[data-ne]'); if (ne) { e.preventDefault(); return openNetease(ne.dataset.ne); }
   const b = e.target.closest('[data-copy]'); if (!b) return;
   navigator.clipboard.writeText(b.dataset.copy).then(() => toast('复制好了'), () => toast('复制不了，长按文字自己复制'));
 });
