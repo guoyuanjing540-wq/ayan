@@ -1279,6 +1279,7 @@ async function ask(c) {
   saveConvs(); setBusy(false); render(); scrollEnd(); renderConvs();
   if (bot.content) setTimeout(loadBalance, 1500);
   if (bot.content && S.autoRead) speak(stripMem(bot.content));
+  if (bot.content) prefetchSongs(bot.content);
 }
 // 发请求、边收边画；出错写进 bot.error。ctrl 由调用的人建
 async function streamInto(body, tries, bot, vision, who = '', ctx = null) {
@@ -1498,7 +1499,7 @@ async function askGroup(c, quiet) {
       const notes = takeTags(bot.content); if (notes.length) bot.notes = notes;
     } else bot.content = bot.content.replace(PRIV_RE, '').trim();
     { const capn = takeCaps(bot.content); if (capn.length) bot.notes = [...(bot.notes || []), ...capn]; }
-    said++; render();
+    said++; render(); prefetchSongs(bot.content);
     if (S.autoRead) speak(stripMem(bot.content));
   }
   if (!said && !ctrl.signal.aborted && !c.msgs.some(m => m.error && m === c.msgs[c.msgs.length - 1])) toast(quiet ? '没人接话' : '没人吭声，点名试试');
@@ -2412,24 +2413,30 @@ function likeSong(title, q) {
   if (!g.size) return true; let h = 0; for (const x of g) if (t.includes(x)) h++;
   return h / g.size >= 0.5;
 }
+const musicDiag = {};   // 每首歌为什么放不了，失败时说给她听
 async function neteaseId(q) {
-  if (!S.key.trim()) return '';
-  const rs = await webSearch(q + ' 网易云音乐 单曲').catch(() => []);
+  if (!S.key.trim()) { musicDiag.ne = '没填 Key'; return ''; }
+  let rs = [];
+  try { rs = await webSearch(q + ' 网易云音乐 单曲'); } catch (e) { musicDiag.ne = '搜索出错：' + (e.message || e); return ''; }
   for (const r of rs) {
     const m = String(r.link || '').match(/music\.163\.com\/(?:#\/)?(?:m\/)?song(?:\?id=|\/)(\d+)/);
-    if (m && likeSong(r.title, q)) return m[1];
+    if (m && likeSong(r.title, q)) { musicDiag.ne = '找到 ' + m[1]; return m[1]; }
   }
+  musicDiag.ne = `搜到 ${rs.length} 条，没有网易云的歌`;
   return '';
 }
 async function itunesFind(q) {
+  const tried = [];
   for (const cc of ['cn', 'tw', 'hk', 'us']) {
     try {
       const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=song&limit=5&country=${cc}`, { signal: AbortSignal.timeout ? AbortSignal.timeout(6000) : undefined });
-      if (!r.ok) continue;
+      if (!r.ok) { tried.push(cc + ' ' + r.status); continue; }
       const hit = ((await r.json()).results || []).find(x => x.previewUrl);
-      if (hit) return { url: hit.previewUrl, name: hit.trackName, artist: hit.artistName, art: hit.artworkUrl100 };
-    } catch {}
+      if (hit) { musicDiag.it = '找到（' + cc + '）'; return { url: hit.previewUrl, name: hit.trackName, artist: hit.artistName, art: hit.artworkUrl100 }; }
+      tried.push(cc + ' 0 条');
+    } catch (e) { tried.push(cc + ' ' + (e.name === 'TimeoutError' || e.name === 'AbortError' ? '超时' : '连不上')); }
   }
+  musicDiag.it = tried.join('、');
   return null;
 }
 // 换源放：'ok' 放起来了；'blocked' 手机不让自动出声（要她再点一下）；'fail' 这个源坏了
@@ -2441,7 +2448,16 @@ function tryPlay(src) {
     player.src = src; player.play().catch(e => fin(e && e.name === 'NotAllowedError' ? 'blocked' : 'fail'));
   });
 }
-let playQueue = [];   // 还没试的源 [{src,label}]
+let playQueue = [];
+const APPV = 'v26';
+async function prefetchSongs(t) {
+  if (!capOn('music')) return;
+  for (const m of (t || '').matchAll(/\[\[\s*听歌\s*[|｜]([^\]]+)\]\]/g)) {
+    const q = m[1].trim(); if (!q || (musicCache[q] && (musicCache[q].ne || musicCache[q].it))) continue;
+    const [ne, it] = await Promise.all([neteaseId(q), itunesFind(q)]);
+    if (ne || it) { musicCache[q] = { ne, it }; store.set('musicCache', musicCache); render(); }
+  }
+}   // 还没试的源 [{src,label}]
 async function runQueue(q, hit) {
   while (playQueue.length) {
     const c = playQueue[0];
@@ -2455,10 +2471,12 @@ async function runQueue(q, hit) {
       return setPlay(q, 'play', c.label);
     }
     if (r === 'blocked') return setPlay(q, 'ready', '找到了，再点一下 ▶');
+    musicDiag.play = (musicDiag.play ? musicDiag.play + '；' : '') + c.label + ' 放不出来' + (player.error ? '（' + player.error.code + '）' : '');
     playQueue.shift();
   }
   setPlay('', '', '');
-  toast(hit.ne || hit.it ? '找到了但放不出来，点「网易云」去听' : '没找到这首，点「网易云」去听');
+  const d = `网易云：${musicDiag.ne || '没试'}\nApple：${musicDiag.it || '没试'}${musicDiag.play ? '\n' + musicDiag.play : ''}`;
+  alert((hit.ne || hit.it ? '找到了但放不出来' : '没找到这首') + '（截图给哥哥看）\n\n' + d + '\n\n版本 ' + APPV);
 }
 async function playSong(q) {
   if (nowPlay.q === q && nowPlay.st === 'play') { player.pause(); return setPlay(q, 'pause'); }
@@ -2470,6 +2488,7 @@ async function playSong(q) {
   setPlay(q, 'load', '在找…');
   let hit = musicCache[q];
   if (!hit || !(hit.ne || hit.it)) {
+    for (const k in musicDiag) delete musicDiag[k];
     const [ne, it] = await Promise.all([neteaseId(q), itunesFind(q)]);
     hit = { ne, it };
     // 找到了才记，没找到下次重找
