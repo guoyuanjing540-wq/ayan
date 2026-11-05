@@ -622,6 +622,8 @@ input.tg:disabled{opacity:.35;cursor:not-allowed}
     <div class="blk"><label>希望阿衍怎么回答？</label>
       <textarea id="ciHow" rows="3" placeholder="长短、语气、要不要分点……"></textarea></div>
     <div class="it"><div class="lt">记忆<small>他把以后用得上的事自己记下来，分四类（她/约定/事件/索引），同一件事只留一条、变了就改。关掉后不看也不记，已有的不删；临时对话不碰这里</small></div><input type="checkbox" class="tg" id="memOn"></div>
+    <div class="it"><div class="lt">翻聊天记录<small>像 GPT 那样：你提起以前的事，他们自己去旧对话里找。互通＝谁都能翻你跟谁的聊天；只翻自己的＝各翻各的。临时对话不算</small></div>
+      <select id="recall"><option value="all">大家互通</option><option value="own">只翻自己的</option><option value="off">关</option></select></div>
     <div class="blk">
       <div class="addrow memadd">
         <select id="memType"><option value="她">她</option><option value="约定">约定</option><option value="事件" selected>事件</option><option value="索引">索引</option></select>
@@ -775,7 +777,7 @@ let S = {
   moments: store.get('moments', []), momOn: store.get('momOn', true),
   chars: store.get('chars', []), myName: store.get('myName', ''),
   caps: store.get('caps', { geo: false, music: true, sms: true, food: true, notes: true, photo: true }),
-  geo: store.get('geo', null), notes: store.get('notes', [])
+  geo: store.get('geo', null), notes: store.get('notes', []), recall: store.get('recall', 'all')
 };
 // 临时对话不落盘
 const keepConvs = () => S.convs.filter(c => !c.temp);
@@ -991,6 +993,7 @@ ${useMem ? `- 你能自己记事。写法 [[记住|分类|标题|正文]]：分�
 - 经期：她说来例假/来姨妈了，写 [[经期|来了]]；说走了/干净了，写 [[经期|走了]]。经期里多问一句肚子疼不疼，别说教。
 - 头像：你可以自己换头像。她让你换、或者你觉得该换了（心情、季节、纪念日），在回复最后写 [[换头像|画面描述]]（画的是谁或什么、画风、颜色），一个月别超过几次。
 - 她发图片时你能看到，像熟人一样接着聊图里的东西。
+${recallRule(c)}
 ${capRules()}
 ${S.web ? '- 联网开着：你有一个 search 工具。问到新闻、价格、天气、今天的事，或者你拿不准的，当场调 search 再回答，别说"等下我查"然后不查。没调过 search 就别说"查了下"，数字一个都别编。搜到的用自己的话说，别整段复制。' : '- 联网现在关着：她问最新的事（新闻、价格、天气），别编，就说让她点「+」把联网打开。'}
 - 她说想死、想伤害自己、想跳海、说"不想活了"这类话时，不当玩笑放过：直接问她现在在哪、安不安全，陪着她把这一阵过去；需要的话提一次 12356（心理援助热线）。这不算推她回现实，是你在。`);
@@ -1057,6 +1060,7 @@ function render() {
       : !m.content ? `<div class="bubble">${think}<span class="typing"><i></i><i></i><i></i></span></div>`
       : `<div class="bubble">${think}${md(stripMem(m.content))}${srcs}${capCards(m.content)}</div>`;
     const memo = (m.saved && m.saved.length ? `<div class="memo">🌊 记下了：${esc(m.saved.join('；'))}</div>` : '')
+      + (m.recalls && m.recalls.length ? `<div class="memo">🔎 翻了以前的聊天：${esc(m.recalls.join('、'))}</div>` : '')
       + (m.notes || []).map(n => `<div class="memo">${esc(n)}</div>`).join('');
     const acts = live ? '' : `${m.content ? `<button data-act="read" data-i="${i}">读</button>` : ''}<button data-act="copy" data-i="${i}">复制</button>${i === lastAi ? `<button data-act="redo" data-i="${i}">重说</button>` : ''}<button data-act="del" data-i="${i}">删除</button>`;
     const via = m.via ? `<span title="原来的模型人太多，自动换了">via ${esc(m.via)}</span>` : '';
@@ -1164,6 +1168,79 @@ const searchText = (q, rs) => rs.length
   ? `搜「${q}」，${new Date().toLocaleDateString('zh-CN')} 拿到的结果：\n\n` + rs.map((r, i) => `[${i + 1}] ${r.title || ''}（${r.media || ''}${r.publish_date ? '，' + r.publish_date : ''}）\n${(r.content || '').slice(0, 800)}`).join('\n\n')
   : `搜「${q}」什么都没搜到。`;
 
+// ---------- 翻聊天记录：像 GPT 的「参考聊天记录」。他自己定关键词，App 在手机里存的对话里找，找到的片段喂回去 ----------
+// 不用向量（她号上 embedding 不一定能用、也花钱），中文按两个字一组比，英文数字按整词比
+const recallOn = c => S.recall !== 'off' && !(c && c.temp);
+const recallTool = () => [{ type: 'function', function: {
+  name: 'recall',
+  description: '翻她手机里以前的聊天记录（以前的对话、私聊、群聊都有）。她说"上次""之前""那天""你还记得吗"，或者你想接以前聊过的事、但眼前的聊天里没有，先调它再回答，别凭印象编。',
+  parameters: { type: 'object', properties: {
+    query: { type: 'string', description: '关键词，2 到 4 个，空格隔开，比如"米线 晚饭"、"小说 第三十一章"' },
+    days: { type: 'integer', description: '只看最近几天；不限就别填' }
+  }, required: ['query'] }
+} }];
+const toolsFor = c => [...(S.web ? webTool() : []), ...(recallOn(c) ? recallTool() : [])];
+function recallRule(c) {
+  if (!recallOn(c)) return '';
+  return `- 你有一个 recall 工具，能翻她以前的聊天记录${S.recall === 'all' ? '（她跟所有人的都能翻：跟阿衍的、跟别的角色的私聊、群聊）' : '（只有你在场的那些）'}。她提起以前的事（"上次说的""那天""你还记得吗"），或者你想接上次的话、眼前没有，先调 recall，翻到了自然地接，别念"根据聊天记录"；翻不到就老实说不记得了，别编。翻到的是她跟别人说的，就当是你知道的事，别逐字复述、别拿来审她。`;
+}
+const convWho = c => !c.group ? '跟阿衍' : c.solo ? '跟' + nameOf(c.group.members[0]) + '私聊' : '群「' + (c.title || '群聊') + '」';
+function recallSees(c, id) {
+  if (S.recall === 'all') return true;
+  return c.group ? c.group.members.includes(id) : id === AYAN;
+}
+function grams(s) {
+  const g = new Set();
+  for (const w of (s || '').toLowerCase().split(/[^\p{L}\p{N}]+/u)) {
+    if (!w) continue;
+    if (/^[a-z0-9]+$/.test(w)) { g.add(w); continue; }
+    if ([...w].length === 1) { g.add(w); continue; }
+    for (let i = 0; i < w.length - 1; i++) g.add(w.slice(i, i + 2));
+  }
+  return g;
+}
+const msgText = m => (m.role === 'assistant' ? stripMem(m.content) : (m.content || '')) + (m.files || []).map(f => ' [文件：' + f.name + ']').join('') + (m.images && m.images.length ? ' [图]' : '');
+function recallSearch(q, id, cur, days) {
+  const terms = String(q || '').split(/[\s,，、;；]+/).map(t => t.trim()).filter(Boolean).slice(0, 6).map(t => ({ t: t.toLowerCase(), g: grams(t) })).filter(x => x.g.size);
+  if (!terms.length) return { hits: 0, text: '没给关键词，翻不了。' };
+  const since = days > 0 ? Date.now() - days * 864e5 : 0;
+  const found = [];
+  for (const c of S.convs) {
+    if (c.temp || !c.msgs || !recallSees(c, id)) continue;
+    // 眼前这个对话里最近那一截已经在上下文里了，不重复翻
+    const stop = c === cur ? Math.max(0, c.msgs.length - S.ctxN) : c.msgs.length;
+    for (let i = 0; i < stop; i++) {
+      const m = c.msgs[i];
+      if (m.error || (m.t || 0) < since) continue;
+      const tx = msgText(m).toLowerCase(); if (!tx.trim()) continue;
+      let s = 0;
+      for (const { t, g } of terms) {
+        if (tx.includes(t)) { s += 2 + Math.min(t.length, 6) / 3; continue; }
+        let h = 0; for (const x of g) if (tx.includes(x)) h++;
+        const f = h / g.size; if (f >= 0.6) s += f;
+      }
+      if (s > 0) found.push({ c, i, s: s + (m.t || 0) / 1e14 });
+    }
+  }
+  if (!found.length) return { hits: 0, text: `翻了以前的聊天，「${q}」什么都没翻到。跟她直说不记得了，别编。` };
+  found.sort((a, b) => b.s - a.s);
+  const picked = [], used = new Set();
+  for (const f of found) {
+    const k = f.c.id + ':' + Math.floor(f.i / 3);
+    if (used.has(k)) continue; used.add(k); picked.push(f);
+    if (picked.length >= 6) break;
+  }
+  const who = m => m.role === 'user' ? herName() : nameOf(m.who || AYAN, m.name);
+  const cut = (s, n) => s.length > n ? s.slice(0, n) + '…' : s;
+  const text = picked.map((f, k) => {
+    const m = f.c.msgs[f.i], t = m.t || f.c.t;
+    const lines = [f.i - 1, f.i, f.i + 1].filter(j => j >= 0 && j < f.c.msgs.length && !f.c.msgs[j].error)
+      .map(j => { const x = f.c.msgs[j]; return who(x) + '：' + cut(msgText(x).replace(/\s+/g, ' ').trim(), j === f.i ? 300 : 120); });
+    return `[${k + 1}] ${dayLabel(t)} ${hm(t)} · ${convWho(f.c)}${f.c.title && !f.c.group ? '「' + f.c.title + '」' : ''}\n` + lines.join('\n');
+  }).join('\n\n');
+  return { hits: picked.length, text: `翻「${q}」找到 ${picked.length} 段（按相关排）：\n\n` + text };
+}
+
 const alwaysThinks = m => /^glm-5\.(3|[4-9])/.test(m);
 
 async function ask(c) {
@@ -1182,10 +1259,10 @@ async function ask(c) {
     messages: [{ role: 'system', content: systemPrompt(c) },...hist.map((m, k) => toApi(m, vision && m === last, k >= hist.length - 6))]
   };
   if (!vision) { if (alwaysThinks(first)) body.reasoning_effort = S.think ? 'high' : 'low'; else body.thinking = { type: S.think ? 'enabled' : 'disabled' }; }
-  if (S.web && !vision) body.tools = webTool();
+  if (!vision) { const tl = toolsFor(c); if (tl.length) body.tools = tl; }
   if (S.web) setBusy(true, '在查…');
   ctrl = new AbortController();
-  await streamInto(body, tries, bot, vision);
+  await streamInto(body, tries, bot, vision, '', { c, id: AYAN });
   if (bot.content) {
     const got = takeMems(bot.content, c); if (got.length) bot.saved = got;
     const notes = [...takeTags(bot.content), ...takeCaps(bot.content)]; if (notes.length) bot.notes = notes;
@@ -1201,7 +1278,7 @@ async function ask(c) {
   if (bot.content && S.autoRead) speak(stripMem(bot.content));
 }
 // 发请求、边收边画；出错写进 bot.error。ctrl 由调用的人建
-async function streamInto(body, tries, bot, vision, who = '') {
+async function streamInto(body, tries, bot, vision, who = '', ctx = null) {
   const first = body.model;
   let raf = 0;
   const paint = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; render(); scrollEnd(); }); };
@@ -1222,10 +1299,16 @@ async function streamInto(body, tries, bot, vision, who = '') {
         if (/^(1305|1309|1113)$/.test(code) && n + 1 < tries.length) { $('#state').textContent = code === '1305' ? '人多，换个线路…' : '换个模型…'; continue; }
         // 这个模型不认工具：去掉工具，拿她最后一句先搜一遍塞给他
         if (body.tools && res.status === 400 && /tool|function|工具/i.test(JSON.stringify(j || ''))) {
+          const had = body.tools.map(t => t.function.name);
           delete body.tools; n--;
           const lastU = [...body.messages].reverse().find(m => m.role === 'user');
           const q = lastU && (typeof lastU.content === 'string' ? lastU.content : '');
-          if (q) {
+          // 翻记录：拿她这句话本身当关键词替他翻一遍，翻到了才塞
+          if (q && ctx && had.includes('recall')) {
+            const r = recallSearch(q.slice(-60), ctx.id, ctx.c);
+            if (r.hits) { bot.recalls = [...(bot.recalls || []), '（自动）']; body.messages.push({ role: 'system', content: '【App 替你翻的以前的聊天】\n' + r.text }); }
+          }
+          if (q && had.includes('search')) {
             $('#state').textContent = who + '在查…';
             const rs = await webSearch(q).catch(() => []); if (rs.length) bot.sources = rs;
             body.messages.push({ role: 'system', content: '【App 替你搜的】\n' + searchText(q, rs) });
@@ -1263,14 +1346,21 @@ async function streamInto(body, tries, bot, vision, who = '') {
           } catch {}
         }
       }
-      const todo = calls.filter(c => c && c.function.name === 'search');
+      const todo = calls.filter(c => c && (c.function.name === 'search' || c.function.name === 'recall'));
       if (!todo.length) break;
       // 他要搜：去搜，结果喂回去再让他接着说（最多搜三轮，之后不给工具了）
       body.messages.push({ role: 'assistant', content: said, tool_calls: todo.map((c, i) => ({ ...c, id: c.id || 'call_' + round + '_' + i })) });
       for (const [i, c] of todo.entries()) {
-        let q = ''; try { q = JSON.parse(c.function.arguments || '{}').query || ''; } catch { q = c.function.arguments; }
-        $('#state').textContent = who + '在查：' + q;
+        let q = '', args = {}; try { args = JSON.parse(c.function.arguments || '{}'); q = args.query || ''; } catch { q = c.function.arguments; }
         let out;
+        if (c.function.name === 'recall') {
+          $('#state').textContent = who + '在翻聊天记录：' + q;
+          out = ctx ? recallSearch(q, ctx.id, ctx.c, +args.days || 0).text : '这里翻不了聊天记录。';
+          bot.recalls = [...(bot.recalls || []), String(q).slice(0, 20)];
+          body.messages.push({ role: 'tool', tool_call_id: c.id || 'call_' + round + '_' + i, content: out });
+          continue;
+        }
+        $('#state').textContent = who + '在查：' + q;
         try { const rs = await webSearch(q); bot.sources = [...(bot.sources || []), ...rs].slice(-8); out = searchText(q, rs); }
         catch (e) { if (e.name === 'AbortError') throw e; out = '搜索失败：' + e.message + '。跟她直说没搜成，别编。'; }
         body.messages.push({ role: 'tool', tool_call_id: c.id || 'call_' + round + '_' + i, content: out });
@@ -1312,8 +1402,8 @@ function pickSpeakers(c, text) {
   return { list, named: [] };
 }
 // 单聊/群聊里别的角色也要守的几条（阿衍自己的在 systemPrompt 里）
-function charRules() {
-  return [S.web ? '- 联网开着：你有一个 search 工具。问到新闻、价格、天气、今天的事，或者你拿不准的，当场调 search 再回答；没调过就别说"查了下"，数字别编。' : '- 联网关着：她问最新的事别编，让她点「+」打开联网。',
+function charRules(c) {
+  return [recallRule(c), S.web ? '- 联网开着：你有一个 search 工具。问到新闻、价格、天气、今天的事，或者你拿不准的，当场调 search 再回答；没调过就别说"查了下"，数字别编。' : '- 联网关着：她问最新的事别编，让她点「+」打开联网。',
     '- 她说想死、想伤害自己这类话时，不当玩笑放过：问她现在在哪、安不安全，陪着她；需要的话提一次 12356（心理援助热线）。', capRules()].filter(Boolean).join('\n');
 }
 function groupPrompt(c, id, named, quiet) {
@@ -1326,7 +1416,7 @@ function groupPrompt(c, id, named, quiet) {
     if ((ch.card || '').trim()) parts.push('【你知道的她的事（记忆卡）】\n' + ch.card.trim());
     if (S.ciOn && S.ciAbout.trim()) parts.push('【她想让大家知道的（她自己写的）】\n' + S.ciAbout.trim());
     parts.push('现在是北京时间 ' + nowText() + '。');
-    parts.push('【规矩】\n' + charRules());
+    parts.push('【规矩】\n' + charRules(c));
   }
   if (c.solo) {
     parts.push(`【现在是私聊】
@@ -1395,8 +1485,8 @@ async function askGroup(c, quiet) {
       messages: [{ role: 'system', content: groupPrompt(c, id, named, quiet) }, ...groupHistory({ ...c, msgs: c.msgs.slice(0, -1) }, id, vision)]
     };
     if (!vision) { if (alwaysThinks(first)) body.reasoning_effort = S.think ? 'high' : 'low'; else body.thinking = { type: S.think ? 'enabled' : 'disabled' }; }
-    if (S.web && !vision) body.tools = webTool();
-    await streamInto(body, /-flash$/.test(first) ? [first, ...free.filter(m => m !== first)] : [first], bot, vision, nameOf(id) + ' ');
+    if (!vision) { const tl = toolsFor(c); if (tl.length) body.tools = tl; }
+    await streamInto(body, /-flash$/.test(first) ? [first, ...free.filter(m => m !== first)] : [first], bot, vision, nameOf(id) + ' ', { c, id });
     if (bot.error && bot.error !== '停了。' && !bot.content) { bot.error = nameOf(id) + '：' + bot.error; break; }
     if (!bot.content || isSkip(bot.content)) { c.msgs.splice(c.msgs.indexOf(bot), 1); render(); continue; }
     bot.content = cleanGroup(bot.content, c, id);
@@ -2431,7 +2521,7 @@ function openSet() {
   sel.value = S.model;
   $('#theme').value = S.theme; $('#autoRead').checked = S.autoRead; $('#ctxN').value = String(S.ctxN);
   $('#memOn').checked = S.memOn; $('#ciOn').checked = S.ciOn; $('#ciAbout').value = S.ciAbout; $('#ciHow').value = S.ciHow;
-  $('#momOn').checked = S.momOn;
+  $('#momOn').checked = S.momOn; $('#recall').value = S.recall;
   renderMems(); renderCaps(); renderPalList(); $('#palEd').hidden = true; $('#palList').hidden = false; $('#sheet').classList.add('on'); loadBalance();
 }
 function closeSet() {
@@ -2439,8 +2529,8 @@ function closeSet() {
   S.persona = $('#persona').value; S.card = $('#card').value;
   S.theme = $('#theme').value; S.autoRead = $('#autoRead').checked; S.ctxN = +$('#ctxN').value;
   S.memOn = $('#memOn').checked; S.ciOn = $('#ciOn').checked; S.ciAbout = $('#ciAbout').value; S.ciHow = $('#ciHow').value;
-  S.momOn = $('#momOn').checked;
-  save('key', 'model', 'vmodel', 'persona', 'card', 'theme', 'autoRead', 'ctxN', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'momOn'); applyTheme();
+  S.momOn = $('#momOn').checked; S.recall = $('#recall').value;
+  save('recall', 'key', 'model', 'vmodel', 'persona', 'card', 'theme', 'autoRead', 'ctxN', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'momOn'); applyTheme();
   $('#sheet').classList.remove('on'); render(); renderHead(); loadBalance();
 }
 $('#setBtn').onclick = openSet;
@@ -2515,7 +2605,7 @@ $('#mdFile').onchange = async e => {
 
 $('#exportBak').onclick = () => {
   const data = { app: 'ayan', v: 6, at: new Date().toISOString(), model: S.model, vmodel: S.vmodel, persona: S.persona, card: S.card, mems: S.mems, convs: keepConvs(),
-    avatar: S.avatar, period: S.period, ledger: S.ledger, memOn: S.memOn, ciOn: S.ciOn, ciAbout: S.ciAbout, ciHow: S.ciHow, moments: S.moments, momOn: S.momOn, chars: S.chars, myName: S.myName, notes: S.notes, caps: S.caps };
+    avatar: S.avatar, period: S.period, ledger: S.ledger, memOn: S.memOn, ciOn: S.ciOn, ciAbout: S.ciAbout, ciHow: S.ciHow, moments: S.moments, momOn: S.momOn, chars: S.chars, myName: S.myName, notes: S.notes, caps: S.caps, recall: S.recall };
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
   a.download = '月亮备份_' + new Date().toISOString().slice(0, 10) + '.json';
@@ -2532,10 +2622,10 @@ $('#bakFile').onchange = async e => {
     Object.assign(S, { model: d.model || S.model, vmodel: d.vmodel || S.vmodel, persona: d.persona || '', card: d.card || '', mems: d.mems || [], convs: d.convs || [],
       avatar: d.avatar || S.avatar, period: d.period || S.period, ledger: d.ledger || S.ledger,
       memOn: d.memOn != null ? d.memOn : S.memOn, ciOn: d.ciOn != null ? d.ciOn : S.ciOn, ciAbout: d.ciAbout || S.ciAbout, ciHow: d.ciHow || S.ciHow,
-      moments: d.moments || S.moments, momOn: d.momOn != null ? d.momOn : S.momOn, chars: d.chars || S.chars, myName: d.myName != null ? d.myName : S.myName, notes: d.notes || S.notes, caps: d.caps || S.caps });
+      moments: d.moments || S.moments, momOn: d.momOn != null ? d.momOn : S.momOn, chars: d.chars || S.chars, myName: d.myName != null ? d.myName : S.myName, notes: d.notes || S.notes, caps: d.caps || S.caps, recall: d.recall || S.recall });
     migrateMems(); saveMoms(); save('momOn'); momDots();
     S.cur = S.convs[0] ? S.convs[0].id : null;
-    save('model', 'vmodel', 'persona', 'card', 'mems', 'cur', 'avatar', 'period', 'ledger', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'chars', 'myName', 'notes', 'caps'); saveConvs(); applyAvatar(); renderHead();
+    save('model', 'vmodel', 'persona', 'card', 'mems', 'cur', 'avatar', 'period', 'ledger', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'chars', 'myName', 'notes', 'caps', 'recall'); saveConvs(); applyAvatar(); renderHead();
     openSet(); render(); renderConvs(); toast('恢复好了');
   } catch { toast('这不是月亮的备份文件'); }
 };
