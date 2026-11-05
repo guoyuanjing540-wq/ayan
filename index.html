@@ -824,7 +824,7 @@ ${useMem ? `- 你能自己记事。写法 [[记住|分类|标题|正文]]：分�
 - 经期：她说来例假/来姨妈了，写 [[经期|来了]]；说走了/干净了，写 [[经期|走了]]。经期里多问一句肚子疼不疼，别说教。
 - 头像：你可以自己换头像。她让你换、或者你觉得该换了（心情、季节、纪念日），在回复最后写 [[换头像|画面描述]]（画的是谁或什么、画风、颜色），一个月别超过几次。
 - 她发图片时你能看到，像熟人一样接着聊图里的东西。
-${S.web ? '- 联网开着：每次回她之前，App 已经拿她的话替你搜过一遍，结果就在你手里。别说自己不能联网、不能上网；没搜到想要的就直说没搜到。搜到的用自己的话说，别整段复制。' : '- 联网现在关着：她问最新的事（新闻、价格、天气），就说让她点「+」把联网打开。'}
+${S.web ? '- 联网开着：你有一个 search 工具。问到新闻、价格、天气、今天的事，或者你拿不准的，当场调 search 再回答，别说"等下我查"然后不查。没调过 search 就别说"查了下"，数字一个都别编。搜到的用自己的话说，别整段复制。' : '- 联网现在关着：她问最新的事（新闻、价格、天气），别编，就说让她点「+」把联网打开。'}
 - 她说想死、想伤害自己、想跳海、说"不想活了"这类话时，不当玩笑放过：直接问她现在在哪、安不安全，陪着她把这一阵过去；需要的话提一次 12356（心理援助热线）。这不算推她回现实，是你在。`);
   return parts.join('\n\n');
 }
@@ -955,8 +955,27 @@ function toApi(m, withImages, recent) {
   }
   return { role: 'user', content: (m.images && m.images.length ? '[发了' + m.images.length + '张图] ' : '') + text };
 }
-// 联网：智谱现在要写明用哪个搜索引擎，不写就可能不搜（search_std 一次 1 分钱）
-const webTool = () => [{ type: 'web_search', web_search: { enable: true, search_engine: 'search_std', search_result: true, count: 5 } }];
+// 联网：给他一个 search 工具，他自己决定搜什么；App 去调智谱的搜索接口（search_std 一次 1 分钱），把结果喂回去
+// （以前用的是智谱内置 web_search，glm-5.3 上不一定搜，搜没搜也看不出来）
+const webTool = () => [{ type: 'function', function: {
+  name: 'search',
+  description: '上网搜。新闻、价格（金价、汇率）、天气、今天发生的事、你拿不准的事实，都先调它再回答。',
+  parameters: { type: 'object', properties: { query: { type: 'string', description: '搜索词，20 字以内，带上日期或地点，比如"2026年11月5日 金价"' } }, required: ['query'] }
+} }];
+async function webSearch(q) {
+  const res = await fetch(API.replace(/chat\/completions$/, 'web_search'), {
+    method: 'POST', signal: ctrl && ctrl.signal,
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
+    body: JSON.stringify({ search_query: String(q || '').slice(0, 70), search_engine: 'search_std', search_intent: false, count: 6, content_size: 'medium' })
+  });
+  let j = null; try { j = await res.json(); } catch {}
+  if (!res.ok) throw new Error((j && j.error && j.error.message) || ('搜索出错 ' + res.status));
+  return (j && j.search_result) || [];
+}
+const searchText = (q, rs) => rs.length
+  ? `搜「${q}」，${new Date().toLocaleDateString('zh-CN')} 拿到的结果：\n\n` + rs.map((r, i) => `[${i + 1}] ${r.title || ''}（${r.media || ''}${r.publish_date ? '，' + r.publish_date : ''}）\n${(r.content || '').slice(0, 500)}`).join('\n\n')
+  : `搜「${q}」什么都没搜到。`;
+
 const alwaysThinks = m => /^glm-5\.(3|[4-9])/.test(m);
 
 async function ask(c) {
@@ -999,40 +1018,77 @@ async function streamInto(body, tries, bot, vision, who = '') {
   let raf = 0;
   const paint = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; render(); scrollEnd(); }); };
   try {
-    let res;
-    for (let n = 0; ; n++) {
-      body.model = tries[n];
-      res = await fetch(API, {
-        method: 'POST', signal: ctrl.signal,
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
-        body: JSON.stringify(body)
-      });
-      if (res.ok) break;
-      let j = null; try { j = await res.json(); } catch {}
-      const code = j && j.error && j.error.code;
-      if (code === '1305' && n + 1 < tries.length) { $('#state').textContent = '人多，换个线路…'; continue; }
-      throw Object.assign(new Error(friendlyError(res.status, j) + (vision ? '（这条用的是看图模型 ' + body.model + '）' : '')), { shown: true });
-    }
-    if (body.model !== first) bot.via = body.model;
-    const reader = res.body.getReader(), dec = new TextDecoder();
-    let buf = '';
-    for (;;) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buf += dec.decode(value, { stream: true });
-      const lines = buf.split('\n'); buf = lines.pop();
-      for (const line of lines) {
-        const l = line.trim();
-        if (!l.startsWith('data:')) continue;
-        const data = l.slice(5).trim();
-        if (data === '[DONE]') continue;
-        try {
-          const j = JSON.parse(data), d = j.choices?.[0]?.delta;
-          if (j.web_search && j.web_search.length) bot.sources = j.web_search;
-          if (d && d.reasoning_content) { bot.reasoning = (bot.reasoning || '') + d.reasoning_content; $('#state').textContent = who + '在想…'; paint(); }
-          if (d && d.content) { bot.content += d.content; $('#state').textContent = who + '正在输入…'; paint(); }
-        } catch {}
+    for (let round = 0; ; round++) {
+      let res;
+      for (let n = 0; ; n++) {
+        body.model = tries[n];
+        res = await fetch(API, {
+          method: 'POST', signal: ctrl.signal,
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
+          body: JSON.stringify(body)
+        });
+        if (res.ok) break;
+        let j = null; try { j = await res.json(); } catch {}
+        const code = j && j.error && j.error.code;
+        if (code === '1305' && n + 1 < tries.length) { $('#state').textContent = '人多，换个线路…'; continue; }
+        // 这个模型不认工具：去掉工具，拿她最后一句先搜一遍塞给他
+        if (body.tools && res.status === 400 && /tool|function|工具/i.test(JSON.stringify(j || ''))) {
+          delete body.tools; n--;
+          const lastU = [...body.messages].reverse().find(m => m.role === 'user');
+          const q = lastU && (typeof lastU.content === 'string' ? lastU.content : '');
+          if (q) {
+            $('#state').textContent = who + '在查…';
+            const rs = await webSearch(q).catch(() => []); if (rs.length) bot.sources = rs;
+            body.messages.push({ role: 'system', content: '【App 替你搜的】\n' + searchText(q, rs) });
+          }
+          continue;
+        }
+        throw Object.assign(new Error(friendlyError(res.status, j) + (vision ? '（这条用的是看图模型 ' + body.model + '）' : '')), { shown: true });
       }
+      if (body.model !== first) bot.via = body.model;
+      const reader = res.body.getReader(), dec = new TextDecoder();
+      let buf = '', said = '';
+      const calls = [];
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split('\n'); buf = lines.pop();
+        for (const line of lines) {
+          const l = line.trim();
+          if (!l.startsWith('data:')) continue;
+          const data = l.slice(5).trim();
+          if (data === '[DONE]') continue;
+          try {
+            const j = JSON.parse(data), d = j.choices?.[0]?.delta;
+            if (j.web_search && j.web_search.length) bot.sources = j.web_search;
+            if (d && d.reasoning_content) { bot.reasoning = (bot.reasoning || '') + d.reasoning_content; $('#state').textContent = who + '在想…'; paint(); }
+            if (d && d.content) { bot.content += d.content; said += d.content; $('#state').textContent = who + '正在输入…'; paint(); }
+            if (d && d.tool_calls) for (const tc of d.tool_calls) {
+              const k = tc.index ?? calls.length;
+              const c = calls[k] || (calls[k] = { id: '', type: 'function', function: { name: '', arguments: '' } });
+              if (tc.id) c.id = tc.id;
+              if (tc.function && tc.function.name) c.function.name = tc.function.name;
+              if (tc.function && tc.function.arguments) c.function.arguments += typeof tc.function.arguments === 'string' ? tc.function.arguments : JSON.stringify(tc.function.arguments);
+            }
+          } catch {}
+        }
+      }
+      const todo = calls.filter(c => c && c.function.name === 'search');
+      if (!todo.length) break;
+      // 他要搜：去搜，结果喂回去再让他接着说（最多搜三轮，之后不给工具了）
+      body.messages.push({ role: 'assistant', content: said, tool_calls: todo.map((c, i) => ({ ...c, id: c.id || 'call_' + round + '_' + i })) });
+      for (const [i, c] of todo.entries()) {
+        let q = ''; try { q = JSON.parse(c.function.arguments || '{}').query || ''; } catch { q = c.function.arguments; }
+        $('#state').textContent = who + '在查：' + q;
+        let out;
+        try { const rs = await webSearch(q); bot.sources = [...(bot.sources || []), ...rs].slice(-8); out = searchText(q, rs); }
+        catch (e) { if (e.name === 'AbortError') throw e; out = '搜索失败：' + e.message + '。跟她直说没搜成，别编。'; }
+        body.messages.push({ role: 'tool', tool_call_id: c.id || 'call_' + round + '_' + i, content: out });
+      }
+      if (bot.content && !/\n$/.test(bot.content)) bot.content += '\n\n';
+      if (round >= 2) delete body.tools;
+      paint();
     }
     if (!bot.content.trim()) bot.error = '阿衍没说话（返回是空的），点「重说」再试一次。';
   } catch (e) {
