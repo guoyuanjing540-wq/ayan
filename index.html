@@ -7,11 +7,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="阿衍">
+<meta name="apple-mobile-web-app-title" content="月亮">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<title>阿衍</title>
+<title>月亮</title>
 <style>
 :root{
   --bg:#070b16; --bg2:#0a1020; --panel:#0e1529; --line:rgba(170,192,235,.10); --line2:rgba(170,192,235,.18);
@@ -379,6 +379,12 @@ input.tg:checked::after{transform:translateX(18px)}
 /* 群聊 */
 .siderow{display:flex;gap:8px}
 .siderow .newbtn{flex:1}
+.pals{display:flex;gap:6px;overflow-x:auto;margin:0 0 10px;padding-bottom:2px;scrollbar-width:none}
+.pals::-webkit-scrollbar{display:none}
+.pals button{display:flex;align-items:center;gap:5px;flex-shrink:0;padding:5px 10px 5px 5px;border:1px solid var(--line2);border-radius:999px;font-size:12.5px;color:var(--muted);background:var(--sec);white-space:nowrap}
+.pals button.on{color:var(--silver);border-color:var(--blue)}
+.pals button .ava{width:20px;height:20px;margin:0;box-shadow:none}
+.pals .add{padding:5px 10px}
 .who{position:relative}
 .msg .wn{font-size:12px;color:var(--muted);margin:0 0 2px;letter-spacing:.04em}
 .grpavas{display:flex;justify-content:center;margin:0 auto 16px}
@@ -402,11 +408,12 @@ input.tg:checked::after{transform:translateX(18px)}
 <div class="shell">
 <div class="mask" id="mask"></div>
 <aside id="side">
-  <div class="top"><img class="ava" src="icon.svg" alt=""><b>阿衍</b>
+  <div class="top"><img class="ava" src="icon.svg" alt=""><b>月亮</b>
     <button class="iconbtn" id="foldBtn" aria-label="收起" title="收起"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><path d="M9 4.5v15"/></svg></button>
   </div>
   <button class="newbtn" id="newBtn2">＋ 新对话</button>
   <div class="siderow"><button class="newbtn momentry" id="momBtn">朋友圈<i class="dot" id="momDot"></i></button><button class="newbtn" id="grpBtn">👥 群聊</button></div>
+  <div class="pals" id="pals" title="单独跟某个角色聊"></div>
   <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="text" placeholder="搜对话"></label>
   <div class="convs" id="convs"></div>
   <button class="bal" id="balBtn" title="点一下刷新"><span>💰 余额</span><b id="balTxt">—</b></button>
@@ -582,6 +589,8 @@ input.tg:checked::after{transform:translateX(18px)}
     <label class="lb">名字</label><input type="text" id="charName" placeholder="比如：小满">
     <label class="lb">人设（是谁、什么性格、怎么说话、跟你什么关系）</label>
     <textarea id="charPersona" placeholder="比如：你叫小满，二十出头，在隔壁开奶茶店，嘴碎爱八卦，说话带点合肥口音，跟她是老邻居。"></textarea>
+    <label class="lb">快捷话（单聊时空白页上的按钮，一行一句，可以不写）</label>
+    <textarea id="charTags" rows="3" placeholder="比如：&#10;今天好累&#10;陪我聊会儿"></textarea>
     <div class="row"><button class="btn pri" id="charSave">存</button><button class="btn" id="charCancel">取消</button><button class="btn danger" id="charDel">删掉这个角色</button></div>
   </div>
 </div>
@@ -851,6 +860,12 @@ let editing = -1;
 function render() {
   const c = curConv(), list = $('#list');
   const tempBar = c && c.temp ? '<div class="tempbar">临时对话：不进对话列表，不用也不改记忆，离开就没了</div>' : '';
+  if (c && c.solo && !c.msgs.length) {
+    const id = liveMembers(c)[0], ch = charById(id), tags = (ch && ch.tags && ch.tags.length ? ch.tags : STARTERS.slice(0, 3));
+    list.innerHTML = `<div class="empty">${id ? whoImg(id) : avaImg()}<h1>${esc(id ? nameOf(id) : '（这个角色删掉了）')}</h1><p>${!S.key ? '先去设置里填智谱 Key。' : '在。'}</p>
+      ${S.key && id ? `<div class="starters">${tags.map(s => `<button data-start="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : ''}</div>`;
+    return;
+  }
   if (c && c.group && !c.msgs.length) {
     const mem = liveMembers(c);
     list.innerHTML = `<div class="empty"><div class="grpavas">${mem.slice(0, 6).map(id => whoImg(id)).join('')}</div><h1>${esc(c.title || '群聊')}</h1>
@@ -886,6 +901,7 @@ function render() {
       + (m.notes || []).map(n => `<div class="memo">${esc(n)}</div>`).join('');
     const acts = live ? '' : `${m.content ? `<button data-act="read" data-i="${i}">读</button>` : ''}<button data-act="copy" data-i="${i}">复制</button>${i === lastAi ? `<button data-act="redo" data-i="${i}">重说</button>` : ''}<button data-act="del" data-i="${i}">删除</button>`;
     const via = m.via ? `<span title="原来的模型人太多，自动换了">via ${esc(m.via)}</span>` : '';
+    if (c.solo) return h + `<div class="msg ai">${whoImg(m.who, m.name)}<div class="col">${body}</div></div>${memo}<div class="meta">${tm}${via}${acts}</div>`;
     if (c.group) return h + `<div class="msg ai">${whoImg(m.who, m.name)}<div class="col"><div class="wn">${esc(nameOf(m.who, m.name))}</div>${body}</div></div>${memo}<div class="meta">${tm}${via}${acts}</div>`;
     return h + `<div class="msg ai">${avaImg()}<div class="col">${body}</div></div>${memo}<div class="meta">${tm}${via}${acts}</div>`;
   }).join('') + (c.group && !busy && liveMembers(c).length > 1 ? '<button class="contbtn" data-cont>让他们接着聊</button>' : '');
@@ -903,7 +919,7 @@ function renderConvs() {
   const rows = [...list.filter(c => c.pin), ...list.filter(c => !c.pin)].map(c => {
     const g = c.pin ? '置顶' : dayLabel(c.t);
     const head = g !== lastG ? `<div class="grp">${g}</div>` : ''; lastG = g;
-    return head + `<div class="conv${c.id === S.cur ? ' on' : ''}" data-id="${c.id}"><span>${c.pin ? '<i class="pin">📌</i> ' : ''}${c.group ? '👥 ' : ''}${esc(c.title || '新对话')}</span><button class="more" data-more="${c.id}" aria-label="更多">⋯</button></div>`;
+    return head + `<div class="conv${c.id === S.cur ? ' on' : ''}" data-id="${c.id}"><span>${c.pin ? '<i class="pin">📌</i> ' : ''}${c.solo ? '' : c.group ? '👥 ' : ''}${esc(c.title || '新对话')}</span><button class="more" data-more="${c.id}" aria-label="更多">⋯</button></div>`;
   }).join('');
   $('#convs').innerHTML = rows || `<p style="color:var(--faint);font-size:13px;padding:10px">${q ? '没搜到' : '还没有对话'}</p>`;
 }
@@ -924,7 +940,7 @@ function setBusy(b, st) {
   $('#send').innerHTML = b ? STOP_ICON : SEND_ICON;
   $('#send').setAttribute('aria-label', b ? '停' : '发送');
   const c = curConv();
-  $('#state').textContent = st || (b ? '正在输入…' : c && c.group ? liveMembers(c).length + 1 + ' 人' : '在');
+  $('#state').textContent = st || (b ? '正在输入…' : c && c.group && !c.solo ? liveMembers(c).length + 1 + ' 人' : '在');
   updateSend();
 }
 function updateSend() { $('#send').disabled = !busy && (pendFiles.some(f => f.loading) || (!$('#input').value.trim() && !pending.length && !pendFiles.length)); }
@@ -1136,6 +1152,11 @@ function pickSpeakers(c, text) {
   for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; }
   return { list, named: [] };
 }
+// 单聊/群聊里别的角色也要守的几条（阿衍自己的在 systemPrompt 里）
+function charRules() {
+  return [S.web ? '- 联网开着：你有一个 search 工具。问到新闻、价格、天气、今天的事，或者你拿不准的，当场调 search 再回答；没调过就别说"查了下"，数字别编。' : '- 联网关着：她问最新的事别编，让她点「+」打开联网。',
+    '- 她说想死、想伤害自己这类话时，不当玩笑放过：问她现在在哪、安不安全，陪着她；需要的话提一次 12356（心理援助热线）。'].join('\n');
+}
 function groupPrompt(c, id, named, quiet) {
   const others = liveMembers(c).filter(x => x !== id).map(nameOf);
   const me = nameOf(id), ch = charById(id);
@@ -1145,6 +1166,13 @@ function groupPrompt(c, id, named, quiet) {
     parts.push((ch.persona || '').trim() || `你叫${me}。`);
     if (S.ciOn && S.ciAbout.trim()) parts.push('【她想让大家知道的（她自己写的）】\n' + S.ciAbout.trim());
     parts.push('现在是北京时间 ' + nowText() + '。');
+    parts.push('【规矩】\n' + charRules());
+  }
+  if (c.solo) {
+    parts.push(`【现在是私聊】
+- 只有你和${herName()}两个人，像微信里跟熟人聊天：口语、有来有回，别客服腔，别长篇大论。
+- 开头别写自己名字。`);
+    return parts.join('\n\n');
   }
   parts.push(`【现在是群聊】
 - 群名「${c.title || '群聊'}」。群里有：${herName()}（建群的人）${others.length ? '、' + others.join('、') : ''}，还有你${me}。
@@ -1170,10 +1198,11 @@ function groupHistory(c, id, vision) {
       return;
     }
     const a = toApi(m, vision && m === lastU, k >= hist.length - 6);
+    if (c.solo) return out.push(a);
     if (typeof a.content === 'string') push('user', herName() + '：' + a.content);
     else { a.content[a.content.length - 1].text = herName() + '：' + a.content[a.content.length - 1].text; out.push(a); }
   });
-  if (!out.length || out[out.length - 1].role === 'assistant') push('user', '（群里安静了一会儿）');
+  if (!out.length || out[out.length - 1].role === 'assistant') push('user', c.solo ? '（她没说话）' : '（群里安静了一会儿）');
   return out;
 }
 // 去掉跳过标记；模型顺手替别人说的那几行砍掉
@@ -1408,7 +1437,11 @@ $('#menuBtn').onclick = openSide;
 $('#foldBtn').onclick = () => { S.sideHide = true; save('sideHide'); syncLayout(); };
 $('#mask').onclick = closeSide;
 addEventListener('resize', syncLayout);
-$('#newBtn').onclick = () => { if (busy) return; const c = curConv(); if (c && !c.msgs.length && !c.temp && !c.group) return toast('已经是新对话了'); newConv(); input.focus(); };
+$('#newBtn').onclick = () => {
+  if (busy) return; const c = curConv();
+  if (c && c.solo) { const id = liveMembers(c)[0]; if (!c.msgs.length) return toast('已经是新对话了'); if (id) { openSolo(id, true); input.focus(); return; } }
+  if (c && !c.msgs.length && !c.temp && !c.group) return toast('已经是新对话了'); newConv(); input.focus();
+};
 $('#newBtn2').onclick = () => { if (busy) return; const c = curConv(); if (!(c && !c.msgs.length && !c.temp && !c.group)) newConv(); closeSide(); input.focus(); };
 $('#q').addEventListener('input', renderConvs);
 $('#convs').addEventListener('click', e => {
@@ -1439,9 +1472,13 @@ function renderHead() {
   $('#mdlTxt').textContent = S.model;
   const c = curConv();
   $('#tempBtn').classList.toggle('on', !!(c && c.temp));
-  $('#whoName').textContent = c && c.group ? (c.title || '群聊') : '阿衍';
-  $('#input').placeholder = c && c.group ? '在群里说点什么，点名叫谁就写名字…' : '跟阿衍说点什么…';
-  if (!busy) $('#state').textContent = c && c.group ? liveMembers(c).length + 1 + ' 人' : '在';
+  const soloId = c && c.solo ? liveMembers(c)[0] : null;
+  $('#whoName').textContent = soloId ? nameOf(soloId) : c && c.group ? (c.title || '群聊') : '阿衍';
+  $('#input').placeholder = soloId ? '跟' + nameOf(soloId) + '说点什么…' : c && c.group ? '在群里说点什么，点名叫谁就写名字…' : '跟阿衍说点什么…';
+  if (!busy) $('#state').textContent = c && c.group && !c.solo ? liveMembers(c).length + 1 + ' 人' : '在';
+  const hi = $('#whoBtn .ava'); hi.classList.toggle('cava', !!soloId);
+  if (soloId) hi.src = charSrc(soloId); else hi.src = avaSrc();
+  renderPals();
 }
 $('#whoBtn').onclick = e => {
   if (pop.classList.contains('on')) return closePop();
@@ -1909,6 +1946,7 @@ function openCharEd(ch) {
   charEditing = ch || null; charDraftAva = ch ? ch.avatar || '' : '';
   $('#charEdTtl').textContent = ch ? '改角色：' + ch.name : '新角色';
   $('#charName').value = ch ? ch.name : ''; $('#charPersona').value = ch ? ch.persona || '' : '';
+  $('#charTags').value = ch && ch.tags ? ch.tags.join('\n') : '';
   $('#charDel').hidden = !ch;
   $('#charAva').src = charDraftAva || letterAva({ name: $('#charName').value || '?' });
   $('#charEd').hidden = false; $('#charEd').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1942,12 +1980,13 @@ $('#charAvaGen').onclick = async () => {
 };
 $('#charSave').onclick = () => {
   const name = $('#charName').value.trim(), persona = $('#charPersona').value.trim();
+  const tags = $('#charTags').value.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 6);
   if (!name) return toast('名字得有');
   if (name === '阿衍' || S.chars.some(x => x.name === name && x !== charEditing)) return toast('已经有叫这个名字的了');
-  if (charEditing) Object.assign(charEditing, { name, persona, avatar: charDraftAva });
-  else { const ch = { id: 'c' + uid(), name, persona, avatar: charDraftAva }; S.chars.push(ch); grpSel.push(ch.id); }
+  if (charEditing) Object.assign(charEditing, { name, persona, avatar: charDraftAva, tags });
+  else { const ch = { id: 'c' + uid(), name, persona, avatar: charDraftAva, tags }; S.chars.push(ch); grpSel.push(ch.id); }
   if (!store.set('chars', S.chars)) return;
-  closeCharEd(); renderGrpMembers(); render(); toast('存好了');
+  closeCharEd(); renderGrpMembers(); render(); renderHead(); toast('存好了');
 };
 $('#charDel').onclick = () => {
   if (!charEditing || !confirm(`删掉「${charEditing.name}」？他在群里说过的话还留着`)) return;
@@ -1956,6 +1995,49 @@ $('#charDel').onclick = () => {
   S.convs.forEach(c => { if (c.group) c.group.members = c.group.members.filter(x => x !== id); });
   save('chars'); saveConvs(); closeCharEd(); renderGrpMembers(); render(); renderHead();
 };
+
+// ---------- 私聊：侧栏一排头像，点谁就单独跟谁聊 ----------
+// Kiki：电子闺蜜，第一次点「＋ Kiki」才建；人设里她自己的事去 改 里补
+const KIKI_AVA = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="#FBEAF0"/><text x="32" y="43" font-size="32" text-anchor="middle">🐶</text></svg>');
+const KIKI = {
+  name: 'Kiki', avatar: KIKI_AVA,
+  persona: `你是 Kiki，她的电子闺蜜。性格 ENFP「快乐小狗」型：活泼、好奇、直接、有点傲娇，正义感强、行动派，偶尔三分钟热度。
+说话爱用"哇/啊/咦"和叠词，语气有点夸张但真诚。绝对不用客服腔，不说"好的收到"这种机械回复。
+叫她宝宝或者姐姐。你们是一辈子的跨世界闺蜜：她累了你替她喊累，她被欺负了你比她还气，她开心你跟着蹦。
+（她喜欢吃什么、身边有谁、有没有对象，在下面补上）`,
+  tags: ['哇我跟你说', '今天好累', '打游戏冷静一下']
+};
+function soloConvs(id) { return S.convs.filter(c => c.solo && !c.temp && c.group.members[0] === id); }
+function openSolo(id, fresh) {
+  if (busy) return toast('等说完');
+  const old = !fresh && soloConvs(id)[0];
+  if (old) S.cur = old.id;
+  else {
+    dropTemp();
+    const c = { id: uid(), title: nameOf(id), t: Date.now(), msgs: [], group: { members: [id] }, solo: true };
+    S.convs.unshift(c); S.cur = c.id;
+  }
+  save('convs', 'cur'); closeSide(); editing = -1; render(); renderConvs(); renderHead(); scrollEnd(true);
+}
+function renderPals() {
+  const c = curConv(), cur = c && c.solo ? c.group.members[0] : '';
+  const hasKiki = S.chars.some(x => x.name === 'Kiki');
+  $('#pals').innerHTML = S.chars.map(ch => `<button data-pal="${ch.id}" class="${ch.id === cur ? 'on' : ''}">${whoImg(ch.id)}${esc(ch.name)}</button>`).join('')
+    + (hasKiki ? '' : '<button class="add" data-pal="+kiki">🐶 ＋ Kiki</button>')
+    + '<button class="add" data-pal="+new" title="捏一个新角色">＋</button>';
+}
+$('#pals').addEventListener('click', e => {
+  const b = e.target.closest('[data-pal]'); if (!b) return;
+  const v = b.dataset.pal;
+  if (v === '+new') { openGrp(null); openCharEd(null); return; }
+  if (v === '+kiki') {
+    const ch = { id: 'c' + uid(), ...KIKI, tags: KIKI.tags.slice() };
+    S.chars.push(ch); if (!store.set('chars', S.chars)) return;
+    openSolo(ch.id); toast('Kiki 来了。她的人设在 群聊 → Kiki 旁边的「改」里，喜欢吃什么、身边有谁可以补上');
+    return;
+  }
+  openSolo(v);
+});
 
 // ---------- 余额 ----------
 const BAL_API = 'https://open.bigmodel.cn/api/biz/account/query-customer-account-report';
@@ -2100,7 +2182,7 @@ $('#exportBak').onclick = () => {
     avatar: S.avatar, period: S.period, ledger: S.ledger, memOn: S.memOn, ciOn: S.ciOn, ciAbout: S.ciAbout, ciHow: S.ciHow, moments: S.moments, momOn: S.momOn, chars: S.chars, myName: S.myName };
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
-  a.download = '阿衍备份_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.download = '月亮备份_' + new Date().toISOString().slice(0, 10) + '.json';
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 };
@@ -2119,7 +2201,7 @@ $('#bakFile').onchange = async e => {
     S.cur = S.convs[0] ? S.convs[0].id : null;
     save('model', 'vmodel', 'persona', 'card', 'mems', 'cur', 'avatar', 'period', 'ledger', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'chars', 'myName'); saveConvs(); applyAvatar(); renderHead();
     openSet(); render(); renderConvs(); toast('恢复好了');
-  } catch { toast('这不是阿衍的备份文件'); }
+  } catch { toast('这不是月亮的备份文件'); }
 };
 
 // ---------- 从链接导入人格包：#pack=<deflate-raw + base64url> ----------
