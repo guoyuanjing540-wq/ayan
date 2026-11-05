@@ -791,7 +791,9 @@ body.hasbg .meta,body.hasbg .day{color:var(--text)}
       <input type="password" id="key" placeholder="粘贴 API Key" autocomplete="off"></div>
     <div class="blk"><label>DeepSeek API Key<small>platform.deepseek.com → API keys。聊天模型选 deepseek 的时候用它；看图、画头像、联网还是走智谱</small></label>
       <input type="password" id="dskey" placeholder="sk-…" autocomplete="off"></div>
-    <div class="it"><div class="lt">余额<small id="balDetail">—</small></div>
+    <div class="it"><div class="lt">DeepSeek 余额<small id="dsBalDetail">—</small></div>
+      <div class="addrow"><button class="btn" id="dsBalRefresh">刷新</button><a class="btn" href="https://platform.deepseek.com/top_up" target="_blank" rel="noopener">充值</a></div></div>
+    <div class="it"><div class="lt">智谱余额<small id="balDetail">—</small></div>
       <div class="addrow"><button class="btn" id="balRefresh">刷新</button><a class="btn" href="https://open.bigmodel.cn/finance/pay" target="_blank" rel="noopener">充值</a></div></div>
    </section>
 
@@ -979,6 +981,12 @@ const isDS = m => /^deepseek/.test(m || '');
 const apiOf = m => isDS(m) ? DS_API : API;
 const authOf = m => 'Bearer ' + (isDS(m) ? S.dsKey : S.key).trim();
 const hasKey = () => !!(isDS(S.model) ? S.dsKey : S.key).trim();
+// 填了 DS Key 第一次就自动把聊天换过去（只换一次，之后她自己选）
+function dsAutoSwitch() {
+  if (!S.dsKey.trim() || isDS(S.model) || store.get('dsAuto', false)) return;
+  store.set('dsAuto', true); S.model = 'deepseek-chat'; save('model');
+  setTimeout(() => { renderHead(); toast('聊天换成 DeepSeek 了，想换回去在顶上点模型名'); }, 300);
+}
 const keyHint = () => isDS(S.model) ? '先去设置里填 DeepSeek Key' : '先去设置里填智谱 Key';
 const MEM_MAX = 80;
 const $ = s => document.querySelector(s);
@@ -2710,7 +2718,7 @@ function tryPlay(src) {
 // v28：她手机上 Apple 连不上、智谱也搜不到网易云的歌。改走 QQ 音乐：它的搜索认 JSONP（国内直连），
 // 找到歌就开 QQ 音乐自己的手机播放页（免费歌整首、VIP 歌它自己给试听）。真正在月亮里放的，是「一起听」里她加的手机里的歌
 let playQueue = [];
-const APPV = 'v32';
+const APPV = 'v33';
 const qqPlay = mid => 'https://i.y.qq.com/v8/playsong.html?songmid=' + mid;
 async function qqFind(q) {
   const j = await jsonp(`https://c.y.qq.com/soso/fcgi-bin/client_search_cp?w=${encodeURIComponent(q)}&format=jsonp&p=1&n=5&cr=1`, 7000, 'jsonpCallback');
@@ -2841,13 +2849,14 @@ $('#palDel').onclick = () => {
 const BAL_API = 'https://open.bigmodel.cn/api/biz/account/query-customer-account-report';
 const yuan = v => '¥' + (Math.floor((+v || 0) * 100) / 100).toFixed(2);
 async function loadBalance(manual) {
-  if (!S.key.trim()) { $('#balTxt').textContent = '—'; $('#balDetail').textContent = '先填 Key'; return; }
+  if (isDS(S.model)) loadDsBalance().then(v => { $('#balTxt').textContent = v || '查不到'; });
+  if (!S.key.trim()) { if (!isDS(S.model)) $('#balTxt').textContent = '—'; $('#balDetail').textContent = '先填 Key'; return; }
   try {
     const r = await fetch(BAL_API, { headers: { Authorization: 'Bearer ' + S.key.trim() } });
     const j = await r.json();
     if (!j.success || !j.data) throw 0;
     const d = j.data, left = d.availableBalance != null ? d.availableBalance : d.balance;
-    $('#balTxt').textContent = yuan(left);
+    if (!isDS(S.model)) $('#balTxt').textContent = yuan(left);
     $('#balBtn').classList.toggle('low', +left < 2);
     $('#balDetail').textContent = `还剩 ${yuan(left)}，一共充了 ${yuan(d.rechargeAmount)}，已经花了 ${yuan(d.totalSpendAmount)}`;
     if (manual) toast('余额 ' + yuan(left));
@@ -2859,6 +2868,21 @@ async function loadBalance(manual) {
 }
 $('#balBtn').onclick = () => loadBalance(true);
 $('#balRefresh').onclick = () => loadBalance(true);
+// v33：DeepSeek 余额（/user/balance 认 github.io 跨域）
+async function loadDsBalance(manual) {
+  const k = ($('#dskey').value || S.dsKey || '').trim();
+  if (!k) { $('#dsBalDetail').textContent = '先填 Key'; return null; }
+  try {
+    const r = await fetch('https://api.deepseek.com/user/balance', { headers: { Authorization: 'Bearer ' + k } });
+    const j = await r.json();
+    if (!r.ok) throw new Error(r.status === 401 ? 'Key 不对' : (j.error && j.error.message) || r.status);
+    const b = (j.balance_infos || [])[0] || {}, sym = b.currency === 'USD' ? '$' : '¥';
+    const t = `还剩 ${sym}${(+b.total_balance || 0).toFixed(2)}` + (b.granted_balance && +b.granted_balance ? `（送的 ${sym}${(+b.granted_balance).toFixed(2)}）` : '') + (j.is_available ? '' : '，不够用了');
+    $('#dsBalDetail').textContent = t; if (manual) toast('DeepSeek ' + t);
+    return sym + (+b.total_balance || 0).toFixed(2);
+  } catch (e) { $('#dsBalDetail').textContent = '查不到：' + (e.message || '连不上'); if (manual) toast('DeepSeek 余额查不到'); return null; }
+}
+$('#dsBalRefresh').onclick = () => loadDsBalance(true);
 
 // ---------- 设置 ----------
 function renderMems() {
@@ -2894,10 +2918,11 @@ function openSet() {
   $('#theme').value = S.theme; $('#autoRead').checked = S.autoRead; $('#ctxN').value = String(S.ctxN);
   $('#memOn').checked = S.memOn; $('#ciOn').checked = S.ciOn; $('#ciAbout').value = S.ciAbout; $('#ciHow').value = S.ciHow;
   $('#momOn').checked = S.momOn; $('#recall').value = S.recall;
-  renderMems(); renderCaps(); renderPalList(); $('#palEd').hidden = true; $('#palList').hidden = false; $('#sheet').classList.add('on'); loadBalance();
+  renderMems(); renderCaps(); renderPalList(); $('#palEd').hidden = true; $('#palList').hidden = false; $('#sheet').classList.add('on'); loadBalance(); loadDsBalance();
 }
 function closeSet() {
-  S.key = $('#key').value.trim(); S.dsKey = $('#dskey').value.trim(); S.model = $('#model').value; S.vmodel = $('#vmodel').value.trim() || 'glm-4v-flash';
+  S.key = $('#key').value.trim(); S.dsKey = $('#dskey').value.trim(); S.model = $('#model').value;
+  dsAutoSwitch(); S.vmodel = $('#vmodel').value.trim() || 'glm-4v-flash';
   S.persona = $('#persona').value; S.card = $('#card').value;
   S.theme = $('#theme').value; S.autoRead = $('#autoRead').checked; S.ctxN = +$('#ctxN').value;
   S.memOn = $('#memOn').checked; S.ciOn = $('#ciOn').checked; S.ciAbout = $('#ciAbout').value; S.ciHow = $('#ciHow').value;
@@ -3395,7 +3420,7 @@ player.addEventListener('ended', () => {
 
 // ---------- 启动 ----------
 if (!curConv()) S.cur = S.convs[0] ? S.convs[0].id : null;
-syncLayout(); renderConvs(); renderTools(); render(); renderHead(); applyAvatar(); scrollEnd(true); loadBalance(); refreshWeather();
+syncLayout(); renderConvs(); renderTools(); render(); renderHead(); applyAvatar(); scrollEnd(true); dsAutoSwitch(); loadBalance(); refreshWeather();
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshWeather(); });
 if (S.avatar && S.avatar.gen && Date.now() - S.avatar.t > 6.5 * 864e5) genAvatar(S.avatar.desc, true);
 importFromHash();
