@@ -2630,8 +2630,8 @@ function capCards(t) {
       const sub = nowPlay.q === v && nowPlay.label ? `<small>${esc(nowPlay.label)}</small>` : '';
       // v29：找到 QQ 的歌就让 ▶ 本身是一条真链接——主屏 App 里先开空白窗口再改地址会卡在 about:blank
       const direct = hit.qq && !st && !localTrack(v);
-      const btn = direct ? `<a class="cci mplay" href="${esc(qqPlay(hit.qq.mid))}" target="_blank" rel="noopener" aria-label="去 QQ 音乐听">▶</a>` : `<button class="cci mplay" data-play="${esc(v)}" aria-label="播放">${ico}</button>`;
-      out.push(`<div class="capc music${st ? ' on' : ''}">${btn}<span class="cct">${esc(v)}${sub}</span><a href="${esc(hit.ne ? neSong(hit.ne) : CAP_LINKS.netease(v))}" target="_blank" rel="noopener" data-ne="${esc(v)}">网易云</a><a href="${esc(hit.qq ? qqPlay(hit.qq.mid) : CAP_LINKS.qq(v))}" target="_blank" rel="noopener">QQ 音乐</a></div>`);
+      const btn = direct ? `<a class="cci mplay" href="${esc(qqApp(hit.qq.mid))}" aria-label="去 QQ 音乐听">▶</a>` : `<button class="cci mplay" data-play="${esc(v)}" aria-label="播放">${ico}</button>`;
+      out.push(`<div class="capc music${st ? ' on' : ''}">${btn}<span class="cct">${esc(v)}${sub}</span><a href="${esc(hit.ne ? neSong(hit.ne) : CAP_LINKS.netease(v))}" target="_blank" rel="noopener" data-ne="${esc(v)}">网易云</a><a href="${esc(hit.qq ? qqApp(hit.qq.mid) : CAP_LINKS.qq(v))}"${hit.qq ? '' : ' target="_blank" rel="noopener"'}>QQ 音乐</a></div>`);
     }
     if (k === '外卖' && capOn('food')) out.push(`<div class="capc"><span class="cci">⌂</span><span class="cct">${esc(v)}</span><a href="${esc(CAP_LINKS.meituan())}" target="_blank" rel="noopener">美团</a><a href="${esc(CAP_LINKS.amap(v))}" target="_blank" rel="noopener">附近</a></div>`);
     if (k === '短信' && capOn('sms')) out.push(`<div class="capc sms"><span class="cci">✉</span><span class="cct">${esc(v)}</span><a href="${esc(CAP_LINKS.sms(v))}">发短信</a><button data-copy="${esc(v)}">复制</button></div>`);
@@ -2718,8 +2718,11 @@ function tryPlay(src) {
 // v28：她手机上 Apple 连不上、智谱也搜不到网易云的歌。改走 QQ 音乐：它的搜索认 JSONP（国内直连），
 // 找到歌就开 QQ 音乐自己的手机播放页（免费歌整首、VIP 歌它自己给试听）。真正在月亮里放的，是「一起听」里她加的手机里的歌
 let playQueue = [];
-const APPV = 'v34';
+const APPV = 'v35';
 const qqPlay = mid => 'https://i.y.qq.com/v8/playsong.html?songmid=' + mid;
+// v35：网页版只劝下载、不给放。她手机装了 QQ 音乐和网易云 → 直接拉起 App。
+// 格式照 QQ 音乐自己手机网页「打开 App」按钮里的写法：qqmusic://qq.com/media/playSonglist?p={song:[{songmid,type}],action:play}
+const qqApp = mid => 'qqmusic://qq.com/media/playSonglist?p=' + encodeURIComponent(JSON.stringify({ song: [{ songmid: mid, type: 0 }], action: 'play', hideLoading: '1' }));
 async function qqFind(q) {
   const j = await jsonp(`https://c.y.qq.com/soso/fcgi-bin/client_search_cp?w=${encodeURIComponent(q)}&format=jsonp&p=1&n=5&cr=1`, 7000, 'jsonpCallback');
   const ls = (j && j.data && j.data.song && j.data.song.list) || [];
@@ -2748,7 +2751,7 @@ function playSong(q) {
   const lt = localTrack(q);
   if (lt) { player.src = trkUrl[lt.id]; player.play().then(() => setPlay(q, 'play', '手机里的歌')).catch(() => toast('这首放不了')); return; }
   const c = musicCache[q];
-  if (c && c.qq) return void window.open(qqPlay(c.qq.mid), '_blank');
+  if (c && c.qq) return void (location.href = qqApp(c.qq.mid));
   // 还没找过：不再先开空白窗口（主屏 App 里会卡在 about:blank）。先找，找到了 ▶ 变成真链接，再点一下就开
   setPlay(q, 'load', '在 QQ 音乐里找…');
   qqCached(q).then(r => {
@@ -2760,10 +2763,10 @@ const neSong = id => 'https://music.163.com/m/song?id=' + id;
 // 「网易云」：没有能用的搜索接口，手机网页的搜索页又是空白——找过 id 的直接开歌页，没有就开网易云手机首页
 function openNetease(q) {
   const hit = musicCache[q];
-  if (hit && hit.ne) return window.open(neSong(hit.ne), '_blank');
+  if (hit && hit.ne) return void (location.href = 'orpheus://song/' + hit.ne);
   navigator.clipboard && navigator.clipboard.writeText(q).catch(() => {});
   toast('歌名复制好了，网易云里粘贴搜一下');
-  window.open('https://music.163.com/m/', '_blank');
+  location.href = 'orpheus://';   // 网易云 App 的地址头；搜不到它的歌 id，只能拉起 App 让她粘贴
 }
 player.addEventListener('ended', () => { if (nowPlay.st === 'play') setPlay(nowPlay.q, '', ''); });
 document.addEventListener('click', e => {
