@@ -1275,7 +1275,7 @@ function render() {
       + (m.recalls && m.recalls.length ? `<div class="memo">🔎 翻了以前的聊天：${esc(m.recalls.join('、'))}</div>` : '')
       + (m.notes || []).map(n => `<div class="memo">${esc(n)}</div>`).join('');
     const acts = live ? '' : `${m.content ? `<button data-act="read" data-i="${i}">读</button>` : ''}<button data-act="copy" data-i="${i}">复制</button>${i === lastAi ? `<button data-act="redo" data-i="${i}">重说</button>` : ''}<button data-act="del" data-i="${i}">删除</button>`;
-    const via = m.via ? `<span title="原来的模型人太多，自动换了">via ${esc(m.via)}</span>` : '';
+    const via = m.via ? `<span title="${esc(m.viaWhy || '原来的模型人太多，自动换了')}">via ${esc(m.via)}${m.viaWhy ? '（' + esc(m.viaWhy.slice(0, 60)) + '）' : ''}</span>` : '';
     if (c.solo) return h + `<div class="msg ai">${whoImg(m.who, m.name)}<div class="col">${body}</div></div>${memo}<div class="meta">${tm}${via}${acts}</div>`;
     if (c.group) return h + `<div class="msg ai">${whoImg(m.who, m.name)}<div class="col"><div class="wn">${esc(nameOf(m.who, m.name))}</div>${body}</div></div>${memo}<div class="meta">${tm}${via}${acts}</div>`;
     return h + `<div class="msg ai">${avaImg()}<div class="col">${body}</div></div>${memo}<div class="meta">${tm}${via}${acts}</div>`;
@@ -1513,7 +1513,7 @@ async function streamInto(body, tries, bot, vision, who = '', ctx = null) {
         let j = null; try { j = await res.json(); } catch {}
         const code = j && j.error && j.error.code;
         // 1305 人多；1309/1113 是免费模型被过期的 Coding Plan 卡住（她号上就是这样），换下一个（最后一个是付费的）
-        if (/^(1305|1309|1113)$/.test(code) && n + 1 < tries.length) { $('#state').textContent = code === '1305' ? '人多，换个线路…' : '换个模型…'; continue; }
+        if (/^(1305|1309|1113)$/.test(code) && n + 1 < tries.length) { bot.viaWhy = tries[n] + ' 报 ' + code + ((j.error.message) ? '：' + j.error.message : ''); $('#state').textContent = code === '1305' ? '人多，换个线路…' : '换个模型…'; continue; }
         // 这个模型不认工具：去掉工具，拿她最后一句先搜一遍塞给他
         if (body.tools && res.status === 400 && /tool|function|工具/i.test(JSON.stringify(j || ''))) {
           const had = body.tools.map(t => t.function.name);
@@ -2696,7 +2696,7 @@ function tryPlay(src) {
 // v28：她手机上 Apple 连不上、智谱也搜不到网易云的歌。改走 QQ 音乐：它的搜索认 JSONP（国内直连），
 // 找到歌就开 QQ 音乐自己的手机播放页（免费歌整首、VIP 歌它自己给试听）。真正在月亮里放的，是「一起听」里她加的手机里的歌
 let playQueue = [];
-const APPV = 'v30';
+const APPV = 'v31';
 const qqPlay = mid => 'https://i.y.qq.com/v8/playsong.html?songmid=' + mid;
 async function qqFind(q) {
   const j = await jsonp(`https://c.y.qq.com/soso/fcgi-bin/client_search_cp?w=${encodeURIComponent(q)}&format=jsonp&p=1&n=5&cr=1`, 7000, 'jsonpCallback');
