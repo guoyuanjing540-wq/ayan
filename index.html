@@ -1000,7 +1000,7 @@ async function ask(c) {
   const vision = !!(last && last.role === 'user' && last.images && last.images.length);
   // 免费模型挤不进去（1305）就按顺序换下一个免费的
   const first = vision ? (S.vmodel.trim() || 'glm-4v-flash') : S.model;
-  const free = vision ? ['glm-4v-flash', 'glm-4.1v-thinking-flash'] : ['glm-4.7-flash', 'glm-4.5-flash', 'glm-4-flash'];
+  const free = vision ? ['glm-4v-flash', 'glm-4.1v-thinking-flash', 'glm-4.5v'] : ['glm-4.7-flash', 'glm-4.5-flash', 'glm-4-flash', 'glm-4.5-air'];
   const tries = /-flash$/.test(first) ? [first, ...free.filter(m => m !== first)] : [first];
   const body = {
     model: first, stream: true, temperature: 0.9,
@@ -1043,7 +1043,8 @@ async function streamInto(body, tries, bot, vision, who = '') {
         if (res.ok) break;
         let j = null; try { j = await res.json(); } catch {}
         const code = j && j.error && j.error.code;
-        if (code === '1305' && n + 1 < tries.length) { $('#state').textContent = '人多，换个线路…'; continue; }
+        // 1305 人多；1309/1113 是免费模型被过期的 Coding Plan 卡住（她号上就是这样），换下一个（最后一个是付费的）
+        if (/^(1305|1309|1113)$/.test(code) && n + 1 < tries.length) { $('#state').textContent = code === '1305' ? '人多，换个线路…' : '换个模型…'; continue; }
         // 这个模型不认工具：去掉工具，拿她最后一句先搜一遍塞给他
         if (body.tools && res.status === 400 && /tool|function|工具/i.test(JSON.stringify(j || ''))) {
           delete body.tools; n--;
@@ -1198,7 +1199,7 @@ async function askGroup(c, quiet) {
     const bot = { role: 'assistant', who: id, name: nameOf(id), content: '', t: Date.now() };
     c.msgs.push(bot); render(); scrollEnd(true);
     const first = vision ? (S.vmodel.trim() || 'glm-4v-flash') : S.model;
-    const free = vision ? ['glm-4v-flash', 'glm-4.1v-thinking-flash'] : ['glm-4.7-flash', 'glm-4.5-flash', 'glm-4-flash'];
+    const free = vision ? ['glm-4v-flash', 'glm-4.1v-thinking-flash', 'glm-4.5v'] : ['glm-4.7-flash', 'glm-4.5-flash', 'glm-4-flash', 'glm-4.5-air'];
     // 刚推进去的空 bot 不算历史
     const body = {
       model: first, stream: true, temperature: 0.95,
