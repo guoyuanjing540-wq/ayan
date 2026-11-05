@@ -623,7 +623,7 @@ input.tg:disabled{opacity:.35;cursor:not-allowed}
       <textarea id="ciHow" rows="3" placeholder="长短、语气、要不要分点……"></textarea></div>
     <div class="it"><div class="lt">记忆<small>他把以后用得上的事自己记下来，分四类（她/约定/事件/索引），同一件事只留一条、变了就改。关掉后不看也不记，已有的不删；临时对话不碰这里</small></div><input type="checkbox" class="tg" id="memOn"></div>
     <div class="it"><div class="lt">翻聊天记录<small>像 GPT 那样：你提起以前的事，他们自己去旧对话里找。互通＝谁都能翻你跟谁的聊天；只翻自己的＝各翻各的。临时对话不算</small></div>
-      <select id="recall"><option value="all">大家互通</option><option value="own">只翻自己的</option><option value="off">关</option></select></div>
+      <select id="recall"><option value="own">只翻自己的</option><option value="all">大家互通</option><option value="off">关</option></select></div>
     <div class="blk">
       <div class="addrow memadd">
         <select id="memType"><option value="她">她</option><option value="约定">约定</option><option value="事件" selected>事件</option><option value="索引">索引</option></select>
@@ -777,7 +777,7 @@ let S = {
   moments: store.get('moments', []), momOn: store.get('momOn', true),
   chars: store.get('chars', []), myName: store.get('myName', ''),
   caps: store.get('caps', { geo: false, music: true, sms: true, food: true, notes: true, photo: true }),
-  geo: store.get('geo', null), notes: store.get('notes', []), recall: store.get('recall', 'all')
+  geo: store.get('geo', null), notes: store.get('notes', []), recall: store.get('recall2', 'own')
 };
 // 临时对话不落盘
 const keepConvs = () => S.convs.filter(c => !c.temp);
@@ -2530,7 +2530,7 @@ function closeSet() {
   S.theme = $('#theme').value; S.autoRead = $('#autoRead').checked; S.ctxN = +$('#ctxN').value;
   S.memOn = $('#memOn').checked; S.ciOn = $('#ciOn').checked; S.ciAbout = $('#ciAbout').value; S.ciHow = $('#ciHow').value;
   S.momOn = $('#momOn').checked; S.recall = $('#recall').value;
-  save('recall', 'key', 'model', 'vmodel', 'persona', 'card', 'theme', 'autoRead', 'ctxN', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'momOn'); applyTheme();
+  store.set('recall2', S.recall); save('key', 'model', 'vmodel', 'persona', 'card', 'theme', 'autoRead', 'ctxN', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'momOn'); applyTheme();
   $('#sheet').classList.remove('on'); render(); renderHead(); loadBalance();
 }
 $('#setBtn').onclick = openSet;
@@ -2625,7 +2625,7 @@ $('#bakFile').onchange = async e => {
       moments: d.moments || S.moments, momOn: d.momOn != null ? d.momOn : S.momOn, chars: d.chars || S.chars, myName: d.myName != null ? d.myName : S.myName, notes: d.notes || S.notes, caps: d.caps || S.caps, recall: d.recall || S.recall });
     migrateMems(); saveMoms(); save('momOn'); momDots();
     S.cur = S.convs[0] ? S.convs[0].id : null;
-    save('model', 'vmodel', 'persona', 'card', 'mems', 'cur', 'avatar', 'period', 'ledger', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'chars', 'myName', 'notes', 'caps', 'recall'); saveConvs(); applyAvatar(); renderHead();
+    save('model', 'vmodel', 'persona', 'card', 'mems', 'cur', 'avatar', 'period', 'ledger', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'chars', 'myName', 'notes', 'caps'); store.set('recall2', S.recall); saveConvs(); applyAvatar(); renderHead();
     openSet(); render(); renderConvs(); toast('恢复好了');
   } catch { toast('这不是月亮的备份文件'); }
 };
