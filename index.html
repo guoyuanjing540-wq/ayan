@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="theme-color" content="#f5f7fb">
+<meta name="theme-color" content="#f6f1ea">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -400,6 +400,136 @@ input.tg:checked::after{transform:translateX(18px)}
 .chared .row{align-items:center}
 .contbtn{display:block;margin:10px auto 0;font-size:13px;color:var(--muted);border:1px solid var(--line2);border-radius:16px;padding:5px 14px}
 .contbtn:hover{color:var(--silver)}
+
+/* ================= 月亮：白天是宣纸和月白，夜里是深蓝和月光 ================= */
+:root{
+  --bg:#0e1120; --bg2:#121628; --panel:#181d33; --sec:#151a2e;
+  --line:rgba(232,214,180,.08); --line2:rgba(232,214,180,.15);
+  --text:#ebe5d9; --muted:#9a937f; --faint:#6b6656; --silver:#f3ead6; --blue:#e3b871;
+  --ububble:#232944; --ai-bg:transparent; --press:rgba(243,234,214,.06); --conv-on:rgba(227,184,113,.12); --chip-on:rgba(227,184,113,.16);
+  --pri:#e8cf9c; --pri-fg:#1a1a24; --inbar:rgba(24,29,51,.92); --halo:rgba(227,184,113,.28);
+  --moon:#f1dfb4; --moonglow:rgba(241,223,180,.22); --icobg:rgba(227,184,113,.10); --acc:#e3b871;
+  --shadow:0 8px 30px rgba(0,0,0,.25); --toast:rgba(30,34,56,.96);
+  --serif:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC",serif;
+}
+:root[data-theme="light"]{
+  --bg:#f6f1ea; --bg2:#faf6f0; --panel:#efe8de; --sec:#fffdf9;
+  --line:rgba(80,55,35,.09); --line2:rgba(80,55,35,.15);
+  --text:#2b2520; --muted:#8a7d71; --faint:#b3a699; --silver:#3a2f27; --blue:#b65d3c;
+  --ububble:#ece2d4; --ai-bg:transparent; --press:rgba(80,55,35,.06); --conv-on:rgba(182,93,60,.09); --chip-on:rgba(182,93,60,.10);
+  --pri:#2f2824; --pri-fg:#faf6f0; --inbar:rgba(255,253,249,.96); --halo:rgba(214,170,98,.32);
+  --moon:#f3dfae; --moonglow:rgba(226,186,110,.30); --icobg:#f3e7dc; --acc:#b65d3c;
+  --shadow:0 6px 24px rgba(70,45,25,.07); --toast:rgba(47,40,36,.94); --mask:rgba(40,28,18,.28);
+}
+html,body{font-size:16px;letter-spacing:.01em}
+.who .name,.empty h1,aside .top b,.sethead b,.sheet .bar b,.momhead b,.caphero b,#palEdTtl{font-family:var(--serif);letter-spacing:.12em}
+
+/* 顶上不再是河，是一轮月亮和一点光 */
+.river .water,.river i{display:none}
+.river .sky{background:radial-gradient(ellipse 60% 120% at 82% -10%,var(--moonglow),transparent 70%)}
+.river::before{content:"";position:absolute;right:max(34px,9vw);top:calc(20px + var(--safe-t));width:40px;height:40px;border-radius:50%;
+  box-shadow:inset 11px -6px 0 0 var(--moon);filter:drop-shadow(0 0 14px var(--moonglow)) drop-shadow(0 0 30px var(--moonglow));transform:rotate(-18deg);
+  opacity:.95;animation:moon 9s ease-in-out infinite}
+@keyframes moon{0%,100%{transform:rotate(-18deg) translateY(0)}50%{transform:rotate(-14deg) translateY(3px)}}
+@media (prefers-reduced-motion:reduce){.river::before{animation:none}}
+@media (max-width:899px){.river::before{width:26px;height:26px;top:calc(66px + var(--safe-t));right:30px;box-shadow:inset 7px -4px 0 0 var(--moon);opacity:.8}}
+:root[data-theme="light"] .river::before{--moon:#e2bd78}
+.who .mdl{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
+
+/* 顶栏 */
+header{padding:calc(8px + var(--safe-t)) 14px 6px}
+.iconbtn{color:var(--silver);border-radius:14px}
+.who .ava{box-shadow:0 0 0 2px var(--bg),0 0 0 3px var(--line2),0 0 22px var(--halo)}
+.who .name{font-size:16.5px}
+
+/* 空白页：头像外面一圈月晕 */
+.empty{padding-top:15vh}
+.empty .ava,.empty .cava{width:92px;height:92px;box-shadow:0 0 0 6px var(--bg),0 0 0 7px var(--line2),0 0 60px 6px var(--halo)}
+.empty h1{font-size:24px;margin-top:6px}
+.empty p{color:var(--muted);letter-spacing:.2em}
+.starters{gap:10px;margin-top:26px}
+.starters button{background:var(--sec);border:1px solid var(--line2);color:var(--text);padding:9px 16px;border-radius:999px;box-shadow:var(--shadow)}
+.starters button:hover{border-color:var(--acc);color:var(--acc)}
+
+/* 消息 */
+.msg{margin:16px 0 2px}
+.msg.me .bubble{background:var(--ububble);border-radius:22px 22px 6px 22px;padding:10px 16px;color:var(--text)}
+.msg.ai .bubble{font-size:16px;line-height:1.8}
+.msg .wn{font-family:var(--serif);letter-spacing:.1em}
+.day{letter-spacing:.3em;font-size:11px}
+.day::before,.day::after{content:"";display:inline-block;width:28px;height:1px;background:var(--line2);vertical-align:middle;margin:0 10px}
+.memo{color:var(--acc)}
+.typing i{background:var(--acc)}
+.bubble a{color:var(--acc)}
+.think summary{background:var(--icobg);color:var(--muted)}
+.srcs a{background:var(--sec)}
+
+/* 输入框 */
+.composer{background:var(--inbar);border:1px solid var(--line2);border-radius:26px;box-shadow:var(--shadow);padding:10px 10px 8px 16px}
+.composer:focus-within{border-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+#send{background:var(--pri);color:var(--pri-fg);width:38px;height:38px}
+.tbtn.on{color:var(--acc)}
+
+/* 侧栏 */
+aside{background:var(--bg2);border-right:1px solid var(--line)}
+aside .top b{font-size:18px}
+.newbtn{border-radius:14px;font-weight:500;letter-spacing:.08em}
+.siderow .newbtn{background:var(--sec);color:var(--text);border:1px solid var(--line2);box-shadow:none}
+.conv{border-radius:12px}
+.conv.on{background:var(--conv-on);color:var(--silver)}
+.grp{letter-spacing:.2em}
+.pals button{background:var(--sec)}
+.pals button.on{border-color:var(--acc);color:var(--acc)}
+.bal{background:var(--sec)}
+@media (min-width:900px){aside{background:color-mix(in srgb,var(--bg2) 90%,transparent)}}
+
+/* 设置：一组一张卡片 */
+.setbox{background:var(--bg)}
+.setnav button.on{background:var(--conv-on);color:var(--acc)}
+.setbody section.on{background:var(--sec);border:1px solid var(--line);border-radius:20px;padding:2px 18px 10px;margin:10px 0 16px;box-shadow:var(--shadow)}
+.setbody .it:last-child,.setbody .blk:last-child{border-bottom:0}
+input.tg{width:50px;height:30px;border-radius:15px}
+input.tg::after{width:24px;height:24px;top:3px;left:3px}
+input.tg:checked{background:var(--acc)}
+input.tg:checked::after{transform:translateX(20px)}
+input.tg:disabled{opacity:.35;cursor:not-allowed}
+.btn{border-radius:12px}
+.sw input,.chr input[type=checkbox]{accent-color:var(--acc)}
+.mp .mn,.mp .mc .lk,.mp .mc b{color:var(--acc)}
+
+/* 手机能力：跟你给的那张一样，一行一个，方块图标 + 小标签 + 开关 */
+.caphero{display:flex;gap:14px;align-items:center;margin:14px 0 6px;padding:16px;border-radius:18px;background:var(--icobg)}
+.caphero b{display:block;font-size:17px;color:var(--silver)}
+.caphero small{display:block;color:var(--muted);font-size:12.5px;line-height:1.55;margin-top:3px}
+.capico{font-size:30px;color:var(--acc);flex:none;width:44px;text-align:center}
+.capcard{margin:10px 0}
+.caprow{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+.caprow:last-child{border-bottom:0}
+.capi{width:46px;height:46px;border-radius:14px;background:var(--icobg);color:var(--acc);display:grid;place-items:center;font-size:20px;flex:none}
+.capt{flex:1;min-width:0}
+.capt b{font-weight:600;font-size:15.5px;color:var(--silver)}
+.capt em{font-style:normal;font-size:11.5px;color:var(--acc);margin-left:8px;font-weight:400}
+.capt small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.45}
+.caprow.na .capi{filter:grayscale(1);opacity:.5}
+.caprow.na em{color:var(--faint)}
+/* 聊天里的能力小卡片 */
+.capcs{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.capc{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:14px;background:var(--sec);border:1px solid var(--line2);font-size:14px;max-width:440px}
+.capc .cci{width:30px;height:30px;border-radius:10px;background:var(--icobg);color:var(--acc);display:grid;place-items:center;flex:none}
+.capc .cct{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.capc.sms .cct{white-space:normal}
+.capc a,.capc button{flex:none;font-size:12.5px;color:var(--acc);text-decoration:none;padding:4px 10px;border-radius:999px;border:1px solid color-mix(in srgb,var(--acc) 35%,transparent)}
+/* 角色列表 */
+.pal-hint{margin:12px 0 4px;color:var(--muted);font-size:12.5px}
+.palrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 0;border-bottom:1px solid var(--line)}
+.palrow .ava{width:44px;height:44px}
+.palrow span{flex:1;min-width:0}
+.palrow b{display:block;font-weight:600;color:var(--silver)}
+.palrow small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.palrow i{font-style:normal;color:var(--faint);font-size:20px}
+#palAva{width:56px;height:56px}
+.paled .it b{font-size:16px}
+.toast{color:#faf6f0}
 </style>
 </head>
 <body>
@@ -458,7 +588,9 @@ input.tg:checked::after{transform:translateX(18px)}
   <nav class="setnav" id="setNav">
     <button data-tab="gen" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>常规</button>
     <button data-tab="per"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.3 7.2 17.9l.9-5.4-3.9-3.8 5.4-.8z"/></svg>个性化</button>
+    <button data-tab="caps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M11 18h2"/></svg>手机能力</button>
     <button data-tab="him"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>阿衍</button>
+    <button data-tab="pals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.6 3.6-5.5 6.5-5.5s5.5 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M17.5 14.6c2 .4 3.4 2 4 4.4"/></svg>角色</button>
     <button data-tab="acc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/></svg>Key 和余额</button>
     <button data-tab="data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.7 3.6 3 8 3s8-1.3 8-3v-13M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>数据</button>
   </nav>
@@ -511,6 +643,28 @@ input.tg:checked::after{transform:translateX(18px)}
     <input type="file" id="mdFile" accept=".md,.txt,text/markdown,text/plain" hidden>
     <div class="blk"><label>人设<small>阿衍是谁、怎么说话</small></label><textarea id="persona" rows="7" placeholder="（还没导入）"></textarea></div>
     <div class="blk"><label>记忆卡<small>她是谁，每次说话都会带上</small></label><textarea id="card" rows="7" placeholder="（还没导入）"></textarea></div>
+   </section>
+
+   <section data-pane="caps">
+    <div class="caphero"><div class="capico">⌘</div><div><b>手机能力</b><small>开着的，他们聊天时就会用。iPhone 不给网页的权限（屏幕时间、电池、健康），这里老实标出来，不装样子。</small></div></div>
+    <div class="capcard" id="capList"></div>
+    <div class="blk"><label>便签<small>她让谁记的清单、备忘都在这。iPhone 自带的备忘录网页读不到，所以放在 App 里</small></label>
+      <ul class="mems" id="noteList"></ul></div>
+   </section>
+
+   <section data-pane="pals">
+    <div id="palList" class="palist"></div>
+    <div id="palEd" class="paled" hidden>
+      <div class="it"><div class="lt"><b id="palEdTtl">改角色</b><small>跟阿衍一样：人设管「TA 是谁」，记忆卡管「TA 知道你什么」，每次说话都带上</small></div><button class="btn" id="palBack">‹ 返回</button></div>
+      <div class="it"><div class="lt">头像</div><img id="palAva" class="ava cava" src="icon.svg" alt=""></div>
+      <div class="blk"><div class="addrow"><button class="btn" id="palAvaUp">换一张图</button><button class="btn" id="palAvaGen">照人设画一个</button><button class="btn" id="palAvaReset">用名字当头像</button></div></div>
+      <input type="file" id="palAvaFile" accept="image/*" hidden>
+      <div class="blk"><label>名字</label><input type="text" id="palName" placeholder="比如：Kiki"></div>
+      <div class="blk"><label>人设<small>是谁、什么性格、怎么说话、跟你什么关系</small></label><textarea id="palPersona" rows="8"></textarea></div>
+      <div class="blk"><label>记忆卡<small>TA 该知道的你的事：爱吃什么、身边有谁、最近在忙什么</small></label><textarea id="palCard" rows="6" placeholder="比如：她喜欢凉拌米线、茉莉味……"></textarea></div>
+      <div class="blk"><label>快捷话<small>单聊空白页上的按钮，一行一句</small></label><textarea id="palTags" rows="3"></textarea></div>
+      <div class="row"><button class="btn pri" id="palSave">存</button><button class="btn" id="palChat">存好去聊</button><button class="btn danger" id="palDel">删掉</button></div>
+    </div>
    </section>
 
    <section data-pane="acc">
@@ -619,7 +773,9 @@ let S = {
   avatar: store.get('avatar', null), period: store.get('period', []), ledger: store.get('ledger', []),
   memOn: store.get('memOn', true), ciOn: store.get('ciOn', true), ciAbout: store.get('ciAbout', ''), ciHow: store.get('ciHow', ''),
   moments: store.get('moments', []), momOn: store.get('momOn', true),
-  chars: store.get('chars', []), myName: store.get('myName', '')
+  chars: store.get('chars', []), myName: store.get('myName', ''),
+  caps: store.get('caps', { geo: false, music: true, sms: true, food: true, notes: true, photo: true }),
+  geo: store.get('geo', null), notes: store.get('notes', [])
 };
 // 临时对话不落盘
 const keepConvs = () => S.convs.filter(c => !c.temp);
@@ -648,7 +804,7 @@ const THEME_TXT = { light: '白色', dark: '深夜', auto: '跟系统' };
 function applyTheme() {
   const t = S.theme === 'auto' ? (darkMQ.matches ? 'dark' : 'light') : S.theme;
   document.documentElement.dataset.theme = t;
-  document.querySelector('meta[name=theme-color]').content = t === 'light' ? '#f5f7fb' : '#070b16';
+  document.querySelector('meta[name=theme-color]').content = t === 'light' ? '#f6f1ea' : '#0e1120';
   $('#themeTxt').textContent = THEME_TXT[S.theme];
 }
 applyTheme();
@@ -717,7 +873,9 @@ function md(src) {
 // 记住：可以 [[记住|分类|标题|正文]]，也可以老格式 [[记住|正文]]（旧对话兼容）
 const MEM_RE = /\[\[\s*记住\s*[|｜]([^\]]+)\]\]/g;
 const FORGET_RE = /\[\[\s*忘\s*[|｜]([^\]]+)\]\]/g;
-const TAG_RE = /\[\[\s*(记住|忘|记账|经期|换头像)\s*[|｜][^\]]*\]\]/g;
+const TAG_RE = /\[\[\s*(记住|忘|记账|经期|换头像|听歌|外卖|短信|便签)\s*[|｜][^\]]*\]\]/g;
+// 别的角色只许用能力类的，记事记账是阿衍的
+const PRIV_RE = /\[\[\s*(记住|忘|记账|经期|换头像)\s*[|｜][^\]]*\]\]/g;
 function stripMem(t) { return (t || '').replace(TAG_RE, '').replace(/\[\[[^\]]*$/, '').replace(/\n{3,}/g, '\n\n').trim(); }
 function takeTags(t) {
   const notes = [];
@@ -833,6 +991,7 @@ ${useMem ? `- 你能自己记事。写法 [[记住|分类|标题|正文]]：分�
 - 经期：她说来例假/来姨妈了，写 [[经期|来了]]；说走了/干净了，写 [[经期|走了]]。经期里多问一句肚子疼不疼，别说教。
 - 头像：你可以自己换头像。她让你换、或者你觉得该换了（心情、季节、纪念日），在回复最后写 [[换头像|画面描述]]（画的是谁或什么、画风、颜色），一个月别超过几次。
 - 她发图片时你能看到，像熟人一样接着聊图里的东西。
+${capRules()}
 ${S.web ? '- 联网开着：你有一个 search 工具。问到新闻、价格、天气、今天的事，或者你拿不准的，当场调 search 再回答，别说"等下我查"然后不查。没调过 search 就别说"查了下"，数字一个都别编。搜到的用自己的话说，别整段复制。' : '- 联网现在关着：她问最新的事（新闻、价格、天气），别编，就说让她点「+」把联网打开。'}
 - 她说想死、想伤害自己、想跳海、说"不想活了"这类话时，不当玩笑放过：直接问她现在在哪、安不安全，陪着她把这一阵过去；需要的话提一次 12356（心理援助热线）。这不算推她回现实，是你在。`);
   return parts.join('\n\n');
@@ -896,7 +1055,7 @@ function render() {
     const srcs = m.sources && m.sources.length ? `<div class="srcs">${m.sources.slice(0, 6).map(s => `<a href="${esc(s.link)}" target="_blank" rel="noopener" title="${esc(s.title)}">${esc(s.media || s.title)}</a>`).join('')}</div>` : '';
     const body = m.error ? `<div class="bubble err">${esc(m.error)}</div>`
       : !m.content ? `<div class="bubble">${think}<span class="typing"><i></i><i></i><i></i></span></div>`
-      : `<div class="bubble">${think}${md(stripMem(m.content))}${srcs}</div>`;
+      : `<div class="bubble">${think}${md(stripMem(m.content))}${srcs}${capCards(m.content)}</div>`;
     const memo = (m.saved && m.saved.length ? `<div class="memo">🌊 记下了：${esc(m.saved.join('；'))}</div>` : '')
       + (m.notes || []).map(n => `<div class="memo">${esc(n)}</div>`).join('');
     const acts = live ? '' : `${m.content ? `<button data-act="read" data-i="${i}">读</button>` : ''}<button data-act="copy" data-i="${i}">复制</button>${i === lastAi ? `<button data-act="redo" data-i="${i}">重说</button>` : ''}<button data-act="del" data-i="${i}">删除</button>`;
@@ -1029,7 +1188,7 @@ async function ask(c) {
   await streamInto(body, tries, bot, vision);
   if (bot.content) {
     const got = takeMems(bot.content, c); if (got.length) bot.saved = got;
-    const notes = takeTags(bot.content); if (notes.length) bot.notes = notes;
+    const notes = [...takeTags(bot.content), ...takeCaps(bot.content)]; if (notes.length) bot.notes = notes;
     // 换头像：他写了暗号就照他的画；没写但她明明让他换了，就替他想一个
     const av = bot.content.match(/\[\[\s*换头像\s*[|｜]([^\]]+)\]\]/);
     const lastU = [...c.msgs].reverse().find(m => m.role === 'user');
@@ -1155,7 +1314,7 @@ function pickSpeakers(c, text) {
 // 单聊/群聊里别的角色也要守的几条（阿衍自己的在 systemPrompt 里）
 function charRules() {
   return [S.web ? '- 联网开着：你有一个 search 工具。问到新闻、价格、天气、今天的事，或者你拿不准的，当场调 search 再回答；没调过就别说"查了下"，数字别编。' : '- 联网关着：她问最新的事别编，让她点「+」打开联网。',
-    '- 她说想死、想伤害自己这类话时，不当玩笑放过：问她现在在哪、安不安全，陪着她；需要的话提一次 12356（心理援助热线）。'].join('\n');
+    '- 她说想死、想伤害自己这类话时，不当玩笑放过：问她现在在哪、安不安全，陪着她；需要的话提一次 12356（心理援助热线）。', capRules()].filter(Boolean).join('\n');
 }
 function groupPrompt(c, id, named, quiet) {
   const others = liveMembers(c).filter(x => x !== id).map(nameOf);
@@ -1164,6 +1323,7 @@ function groupPrompt(c, id, named, quiet) {
   if (id === AYAN) parts.push(systemPrompt(c));
   else {
     parts.push((ch.persona || '').trim() || `你叫${me}。`);
+    if ((ch.card || '').trim()) parts.push('【你知道的她的事（记忆卡）】\n' + ch.card.trim());
     if (S.ciOn && S.ciAbout.trim()) parts.push('【她想让大家知道的（她自己写的）】\n' + S.ciAbout.trim());
     parts.push('现在是北京时间 ' + nowText() + '。');
     parts.push('【规矩】\n' + charRules());
@@ -1243,7 +1403,8 @@ async function askGroup(c, quiet) {
     if (id === AYAN) {
       const got = takeMems(bot.content, c); if (got.length) bot.saved = got;
       const notes = takeTags(bot.content); if (notes.length) bot.notes = notes;
-    } else bot.content = stripMem(bot.content);
+    } else bot.content = bot.content.replace(PRIV_RE, '').trim();
+    { const capn = takeCaps(bot.content); if (capn.length) bot.notes = [...(bot.notes || []), ...capn]; }
     said++; render();
     if (S.autoRead) speak(stripMem(bot.content));
   }
@@ -1387,7 +1548,7 @@ $('#plusBtn').onclick = e => {
   e.stopPropagation();
   if (pop.classList.contains('on')) return closePop();
   const ck = on => on ? '<span class="ck">✓ 开着</span>' : '';
-  openPop(`<button data-v="img">🖼 图片</button><button data-v="file">📎 文件<small>PDF、Word、Excel…</small></button><hr>
+  openPop(`${capOn('photo') ? '<button data-v="img">🖼 图片</button>' : ''}<button data-v="file">📎 文件<small>PDF、Word、Excel…</small></button><hr>
     <button data-v="web">🌐 联网搜索${ck(S.web)}</button><button data-v="think">💡 深度思考${ck(S.think)}</button><hr>
     <button data-v="per">🌙 经期</button><button data-v="led">📒 记账</button>`, $('#plusBtn'), v => {
     if (v === 'img') $('#imgFile').click();
@@ -1483,6 +1644,9 @@ function renderHead() {
 $('#whoBtn').onclick = e => {
   if (pop.classList.contains('on')) return closePop();
   const ms = MODELS.some(m => m[0] === S.model) ? MODELS : [...MODELS, [S.model, '']];
+  const c0 = curConv(), sid = c0 && c0.solo ? liveMembers(c0)[0] : null;
+  if (sid) return openPop(`<button data-v="@edit">✎ 改 ${esc(nameOf(sid))} 的人设和记忆卡</button><hr><div class="ttl">聊天模型</div>` + ms.map(([v, d]) => `<button data-v="${esc(v)}" class="${v === S.model ? 'cur' : ''}">${v === S.model ? '✓ ' : ''}${esc(v)}<small>${esc(d)}</small></button>`).join(''),
+    $('#whoBtn'), v => { if (v === '@edit') return openPalFromChat(sid); S.model = v; save('model'); renderHead(); toast('换成 ' + v + ' 了'); });
   openPop('<div class="ttl">聊天模型</div>' + ms.map(([v, d]) => `<button data-v="${esc(v)}" class="${v === S.model ? 'cur' : ''}">${v === S.model ? '✓ ' : ''}${esc(v)}<small>${esc(d)}</small></button>`).join(''),
     $('#whoBtn'), v => { S.model = v; save('model'); renderHead(); toast('换成 ' + v + ' 了'); });
 };
@@ -2039,6 +2203,178 @@ $('#pals').addEventListener('click', e => {
   openSolo(v);
 });
 
+// ---------- 手机能力：网页真能做到的才给开关 ----------
+const CAP_LINKS = {
+  netease: q => 'https://music.163.com/#/search/m/?type=1&s=' + encodeURIComponent(q),
+  qq: q => 'https://y.qq.com/n/ryqq/search?w=' + encodeURIComponent(q),
+  meituan: () => 'https://h5.waimai.meituan.com/',
+  amap: q => 'https://m.amap.com/search/mapview/keywords=' + encodeURIComponent(q),
+  sms: t => 'sms:&body=' + encodeURIComponent(t)
+};
+const CAPS = [
+  { k: 'geo', ico: '⌖', name: '定位和天气', tag: '系统授权', desc: '知道你在哪个城市、现在什么天气，聊天时自然带上。打开时 iPhone 会问一次' },
+  { k: 'photo', ico: '▧', name: '相册', tag: '选了才看', desc: '只看你在「+」里挑的那几张，别的一张都碰不到' },
+  { k: 'music', ico: '♫', name: '音乐', tag: '点了才放', desc: '按心情推荐，点一下跳到网易云 / QQ 音乐' },
+  { k: 'notes', ico: '▤', name: '便签', tag: 'App 里', desc: '让他们帮你记清单、备忘，存在下面' },
+  { k: 'sms', ico: '✉', name: '信息', tag: '你来发', desc: '帮你起草要发给别人的话，点一下打开短信或复制，发不发你定' },
+  { k: 'food', ico: '⌂', name: '外卖', tag: '你来付款', desc: '帮你想吃什么，点一下打开美团，挑和付钱都是你自己' },
+  { k: 'screen', ico: '◷', name: '屏幕使用时间', tag: '网页拿不到', off: true, desc: 'iPhone 只给原生 App，网页读不了' },
+  { k: 'battery', ico: '▰', name: '电池', tag: '网页拿不到', off: true, desc: 'Safari 不让网页看电量' },
+  { k: 'health', ico: '♡', name: '健康', tag: '网页拿不到', off: true, desc: '步数、睡眠只给原生 App' },
+  { k: 'mcp', ico: '⌘', name: 'MCP 工具', tag: '以后', off: true, desc: '要先架一个小后台（Worker），跨设备同步时一起弄' }
+];
+const capOn = k => !!(S.caps && S.caps[k]);
+function renderCaps() {
+  const w = S.geo && S.geo.w;
+  $('#capList').innerHTML = CAPS.map(c => `<div class="caprow${c.off ? ' na' : ''}"><div class="capi">${c.ico}</div>
+    <div class="capt"><b>${c.name}<em>${c.tag}</em></b><small>${c.k === 'geo' && capOn('geo') && w ? esc((S.geo.city || '') + ' · ' + w.text + ' ' + w.temp + '°C') : c.desc}</small></div>
+    <input type="checkbox" class="tg" data-cap="${c.k}"${c.off ? ' disabled' : ''}${!c.off && capOn(c.k) ? ' checked' : ''}></div>`).join('');
+  $('#noteList').innerHTML = S.notes.length ? S.notes.map((n, i) => `<li><span><b>${esc(n.title)}</b><br><small>${esc(n.text)}</small></span><button data-note="${i}">删</button></li>`).join('')
+    : '<li><small>还没有。跟谁说「帮我记一下……」就有了</small></li>';
+}
+$('#capList').addEventListener('change', e => {
+  const b = e.target.closest('[data-cap]'); if (!b) return;
+  S.caps = { ...S.caps, [b.dataset.cap]: b.checked }; save('caps');
+  if (b.dataset.cap === 'geo' && b.checked) askLocation();
+  renderCaps();
+});
+$('#noteList').addEventListener('click', e => { const b = e.target.closest('[data-note]'); if (!b) return; S.notes.splice(+b.dataset.note, 1); save('notes'); renderCaps(); });
+const WMO = c => c === 0 ? '晴' : c <= 2 ? '多云' : c === 3 ? '阴' : c <= 48 ? '有雾' : c <= 57 ? '毛毛雨' : c <= 67 ? '下雨' : c <= 77 ? '下雪' : c <= 82 ? '阵雨' : c <= 86 ? '阵雪' : '雷雨';
+async function refreshWeather(force) {
+  const g = S.geo;
+  if (!capOn('geo') || !g || (!force && g.w && Date.now() - g.w.at < 30 * 6e4)) return;
+  try {
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${g.lat}&longitude=${g.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&forecast_days=1&timezone=auto`);
+    const j = await r.json();
+    g.w = { temp: Math.round(j.current.temperature_2m), text: WMO(j.current.weather_code), hi: Math.round(j.daily.temperature_2m_max[0]), lo: Math.round(j.daily.temperature_2m_min[0]), at: Date.now() };
+  } catch {}
+  if (!g.city) {
+    try {
+      const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${g.lat}&longitude=${g.lon}&localityLanguage=zh`);
+      const j = await r.json(); g.city = j.city || j.locality || j.principalSubdivision || '';
+    } catch {}
+  }
+  save('geo'); if ($('#sheet').classList.contains('on')) renderCaps();
+}
+function askLocation() {
+  if (!navigator.geolocation) return toast('这个浏览器不支持定位');
+  toast('在定位…（iPhone 会问你允不允许）');
+  navigator.geolocation.getCurrentPosition(async pos => {
+    S.geo = { lat: +pos.coords.latitude.toFixed(2), lon: +pos.coords.longitude.toFixed(2) }; save('geo');
+    await refreshWeather(true);
+    toast(S.geo.w ? `${S.geo.city || ''} ${S.geo.w.text} ${S.geo.w.temp}°C` : '定位好了');
+  }, () => { S.caps = { ...S.caps, geo: false }; save('caps'); renderCaps(); toast('没拿到定位。去 设置 → Safari → 位置 里允许'); }, { timeout: 15000, maximumAge: 6e5 });
+}
+function capRules() {
+  const out = [];
+  const w = capOn('geo') && S.geo && S.geo.w;
+  if (w) out.push(`- 她那边：${S.geo.city || '她在的城市'}，现在${w.text} ${w.temp}°C（今天 ${w.lo}~${w.hi}°C，App 定位拿的）。冷了热了下雨了顺嘴提一句，别每次都报天气。`);
+  if (capOn('music')) out.push('- 推荐歌：在回复最后另起一行写 [[听歌|歌名 歌手]]，一首一行、最多两首，她点一下就能去听。');
+  if (capOn('food')) out.push('- 她饿了、想点外卖：帮她想吃什么，最后写 [[外卖|想吃的东西]]，她点开美团自己挑、自己付钱；你下不了单，别说"帮你点好了"。');
+  if (capOn('sms')) out.push('- 她要给别人发消息：帮她起草，写成 [[短信|正文]]，她点一下打开短信或复制。发不发是她的事。');
+  if (capOn('notes')) out.push('- 她让你记个清单、备忘：写 [[便签|标题|内容]]，会存进 App 的便签。');
+  return out.join('\n');
+}
+function takeCaps(t) {
+  const notes = [];
+  if (!capOn('notes')) return notes;
+  for (const m of (t || '').matchAll(/\[\[\s*便签\s*[|｜]([^\]|｜]+)[|｜]([^\]]+)\]\]/g)) {
+    const title = m[1].trim(), text = m[2].trim(); if (!text) continue;
+    const i = S.notes.findIndex(n => n.title === title);
+    if (i >= 0) S.notes[i] = { ...S.notes[i], text, t: Date.now() }; else S.notes.unshift({ title, text, t: Date.now() });
+    notes.push('📝 记进便签：' + title);
+  }
+  if (notes.length) save('notes');
+  return notes;
+}
+// 他写的暗号 → 能点的小卡片
+function capCards(t) {
+  const out = [];
+  for (const m of (t || '').matchAll(/\[\[\s*(听歌|外卖|短信)\s*[|｜]([^\]]+)\]\]/g)) {
+    const k = m[1], v = m[2].trim(); if (!v) continue;
+    if (k === '听歌' && capOn('music')) out.push(`<div class="capc"><span class="cci">♫</span><span class="cct">${esc(v)}</span><a href="${esc(CAP_LINKS.netease(v))}" target="_blank" rel="noopener">网易云</a><a href="${esc(CAP_LINKS.qq(v))}" target="_blank" rel="noopener">QQ 音乐</a></div>`);
+    if (k === '外卖' && capOn('food')) out.push(`<div class="capc"><span class="cci">⌂</span><span class="cct">${esc(v)}</span><a href="${esc(CAP_LINKS.meituan())}" target="_blank" rel="noopener">美团</a><a href="${esc(CAP_LINKS.amap(v))}" target="_blank" rel="noopener">附近</a></div>`);
+    if (k === '短信' && capOn('sms')) out.push(`<div class="capc sms"><span class="cci">✉</span><span class="cct">${esc(v)}</span><a href="${esc(CAP_LINKS.sms(v))}">发短信</a><button data-copy="${esc(v)}">复制</button></div>`);
+  }
+  return out.length ? `<div class="capcs">${out.join('')}</div>` : '';
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-copy]'); if (!b) return;
+  navigator.clipboard.writeText(b.dataset.copy).then(() => toast('复制好了'), () => toast('复制不了，长按文字自己复制'));
+});
+
+// ---------- 设置里的「角色」：跟阿衍一样能改人设、记忆卡、头像 ----------
+let palEditing = null, palDraftAva = '';
+function renderPalList() {
+  const rows = S.chars.map(ch => `<button class="palrow" data-pe="${ch.id}">${whoImg(ch.id)}<span><b>${esc(ch.name)}</b><small>${esc((ch.persona || '').replace(/\s+/g, ' ').slice(0, 42) || '还没写人设')}</small></span><i>›</i></button>`).join('');
+  const kiki = S.chars.some(x => x.name === 'Kiki') ? '' : '<button class="btn" id="palKiki">🐶 请 Kiki 来</button>';
+  $('#palList').innerHTML = `<p class="hint pal-hint">阿衍在「阿衍」那一栏。这里是你捏的其他人，单聊、群聊都用这份人设。</p>${rows || '<p class="hint">还没有角色</p>'}<div class="row">${kiki}<button class="btn" id="palNew">＋ 新角色</button></div>`;
+}
+function openPalEd(ch) {
+  palEditing = ch || null; palDraftAva = ch ? ch.avatar || '' : '';
+  $('#palEdTtl').textContent = ch ? '改：' + ch.name : '新角色';
+  $('#palName').value = ch ? ch.name : ''; $('#palPersona').value = ch ? ch.persona || '' : '';
+  $('#palCard').value = ch ? ch.card || '' : ''; $('#palTags').value = ch && ch.tags ? ch.tags.join('\n') : '';
+  $('#palDel').hidden = !ch;
+  $('#palAva').src = palDraftAva || letterAva({ name: $('#palName').value || '?' });
+  $('#palList').hidden = true; $('#palEd').hidden = false; $('.setbody').scrollTop = 0;
+}
+function openPalFromChat(id) {
+  openSet();
+  document.querySelector('#setNav [data-tab="pals"]').click();
+  openPalEd(charById(id));
+}
+$('#palList').addEventListener('click', e => {
+  const r = e.target.closest('[data-pe]'); if (r) return openPalEd(charById(r.dataset.pe));
+  if (e.target.closest('#palNew')) return openPalEd(null);
+  if (e.target.closest('#palKiki')) { S.chars.push({ id: 'c' + uid(), ...KIKI, tags: KIKI.tags.slice() }); save('chars'); renderPalList(); renderPals(); openPalEd(S.chars[S.chars.length - 1]); }
+});
+$('#palBack').onclick = () => { $('#palEd').hidden = true; $('#palList').hidden = false; renderPalList(); };
+$('#palName').addEventListener('input', () => { if (!palDraftAva) $('#palAva').src = letterAva({ name: $('#palName').value || '?' }); });
+$('#palAvaUp').onclick = () => $('#palAvaFile').click();
+$('#palAvaFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try { palDraftAva = await shrink(f, 256); $('#palAva').src = palDraftAva; } catch { toast('这张图读不了'); }
+};
+$('#palAvaReset').onclick = () => { palDraftAva = ''; $('#palAva').src = letterAva({ name: $('#palName').value || '?' }); };
+$('#palAvaGen').onclick = async () => {
+  if (!S.key.trim()) return toast('先填 Key');
+  const name = $('#palName').value.trim(), per = $('#palPersona').value.trim();
+  if (!name && !per) return toast('先写名字和人设');
+  toast('在画…');
+  try {
+    const desc = (await llm([{ role: 'user', content: `给这个角色画一张头像。名字：${name}\n人设：${per.slice(0, 600)}\n用一句话描述画面（画的是谁、长相或物件、画风、颜色），只输出这句描述。` }], 200)).replace(/^["“]|["”]$/g, '');
+    const r = await fetch(IMG_API, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
+      body: JSON.stringify({ model: 'cogview-3-flash', prompt: '头像，正方形构图，主体居中，' + desc, size: '1024x1024' }) });
+    const j = await r.json(), url = j.data && j.data[0] && j.data[0].url;
+    if (!url) throw new Error((j.error && j.error.message) || '没画出来');
+    const k = await keepLocal(url);
+    if (!k.local) throw new Error('画好了但图存不下来，关掉梯子再试');
+    palDraftAva = k.src; $('#palAva').src = k.src; toast('画好了，记得点「存」');
+  } catch (e) { toast('没画成：' + ((e && e.message) || '网络不好')); }
+};
+function palCommit() {
+  const name = $('#palName').value.trim();
+  if (!name) { toast('名字得有'); return null; }
+  if (name === '阿衍' || S.chars.some(x => x.name === name && x !== palEditing)) { toast('已经有叫这个名字的了'); return null; }
+  const v = { name, persona: $('#palPersona').value.trim(), card: $('#palCard').value.trim(), avatar: palDraftAva,
+    tags: $('#palTags').value.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 6) };
+  if (palEditing) Object.assign(palEditing, v); else { palEditing = { id: 'c' + uid(), ...v }; S.chars.push(palEditing); }
+  if (!store.set('chars', S.chars)) return null;
+  S.convs.forEach(c => { if (c.solo && c.group.members[0] === palEditing.id) c.title = name; });
+  saveConvs(); renderPals(); renderConvs(); renderHead(); render();
+  return palEditing;
+}
+$('#palSave').onclick = () => { if (palCommit()) { toast('存好了'); $('#palEdTtl').textContent = '改：' + palEditing.name; } };
+$('#palChat').onclick = () => { const ch = palCommit(); if (!ch) return; closeSet(); openSolo(ch.id); };
+$('#palDel').onclick = () => {
+  if (!palEditing || !confirm(`删掉「${palEditing.name}」？说过的话还留着`)) return;
+  const id = palEditing.id;
+  S.chars = S.chars.filter(x => x !== palEditing);
+  S.convs.forEach(c => { if (c.group) c.group.members = c.group.members.filter(x => x !== id); });
+  save('chars'); saveConvs(); $('#palBack').click(); renderPals(); render(); renderHead();
+};
+
 // ---------- 余额 ----------
 const BAL_API = 'https://open.bigmodel.cn/api/biz/account/query-customer-account-report';
 const yuan = v => '¥' + (Math.floor((+v || 0) * 100) / 100).toFixed(2);
@@ -2096,7 +2432,7 @@ function openSet() {
   $('#theme').value = S.theme; $('#autoRead').checked = S.autoRead; $('#ctxN').value = String(S.ctxN);
   $('#memOn').checked = S.memOn; $('#ciOn').checked = S.ciOn; $('#ciAbout').value = S.ciAbout; $('#ciHow').value = S.ciHow;
   $('#momOn').checked = S.momOn;
-  renderMems(); $('#sheet').classList.add('on'); loadBalance();
+  renderMems(); renderCaps(); renderPalList(); $('#palEd').hidden = true; $('#palList').hidden = false; $('#sheet').classList.add('on'); loadBalance();
 }
 function closeSet() {
   S.key = $('#key').value.trim(); S.model = $('#model').value; S.vmodel = $('#vmodel').value.trim() || 'glm-4v-flash';
@@ -2179,7 +2515,7 @@ $('#mdFile').onchange = async e => {
 
 $('#exportBak').onclick = () => {
   const data = { app: 'ayan', v: 6, at: new Date().toISOString(), model: S.model, vmodel: S.vmodel, persona: S.persona, card: S.card, mems: S.mems, convs: keepConvs(),
-    avatar: S.avatar, period: S.period, ledger: S.ledger, memOn: S.memOn, ciOn: S.ciOn, ciAbout: S.ciAbout, ciHow: S.ciHow, moments: S.moments, momOn: S.momOn, chars: S.chars, myName: S.myName };
+    avatar: S.avatar, period: S.period, ledger: S.ledger, memOn: S.memOn, ciOn: S.ciOn, ciAbout: S.ciAbout, ciHow: S.ciHow, moments: S.moments, momOn: S.momOn, chars: S.chars, myName: S.myName, notes: S.notes, caps: S.caps };
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
   a.download = '月亮备份_' + new Date().toISOString().slice(0, 10) + '.json';
@@ -2196,10 +2532,10 @@ $('#bakFile').onchange = async e => {
     Object.assign(S, { model: d.model || S.model, vmodel: d.vmodel || S.vmodel, persona: d.persona || '', card: d.card || '', mems: d.mems || [], convs: d.convs || [],
       avatar: d.avatar || S.avatar, period: d.period || S.period, ledger: d.ledger || S.ledger,
       memOn: d.memOn != null ? d.memOn : S.memOn, ciOn: d.ciOn != null ? d.ciOn : S.ciOn, ciAbout: d.ciAbout || S.ciAbout, ciHow: d.ciHow || S.ciHow,
-      moments: d.moments || S.moments, momOn: d.momOn != null ? d.momOn : S.momOn, chars: d.chars || S.chars, myName: d.myName != null ? d.myName : S.myName });
+      moments: d.moments || S.moments, momOn: d.momOn != null ? d.momOn : S.momOn, chars: d.chars || S.chars, myName: d.myName != null ? d.myName : S.myName, notes: d.notes || S.notes, caps: d.caps || S.caps });
     migrateMems(); saveMoms(); save('momOn'); momDots();
     S.cur = S.convs[0] ? S.convs[0].id : null;
-    save('model', 'vmodel', 'persona', 'card', 'mems', 'cur', 'avatar', 'period', 'ledger', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'chars', 'myName'); saveConvs(); applyAvatar(); renderHead();
+    save('model', 'vmodel', 'persona', 'card', 'mems', 'cur', 'avatar', 'period', 'ledger', 'memOn', 'ciOn', 'ciAbout', 'ciHow', 'chars', 'myName', 'notes', 'caps'); saveConvs(); applyAvatar(); renderHead();
     openSet(); render(); renderConvs(); toast('恢复好了');
   } catch { toast('这不是月亮的备份文件'); }
 };
@@ -2240,7 +2576,8 @@ async function importFromHash() {
 
 // ---------- 启动 ----------
 if (!curConv()) S.cur = S.convs[0] ? S.convs[0].id : null;
-syncLayout(); renderConvs(); renderTools(); render(); renderHead(); applyAvatar(); scrollEnd(true); loadBalance();
+syncLayout(); renderConvs(); renderTools(); render(); renderHead(); applyAvatar(); scrollEnd(true); loadBalance(); refreshWeather();
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshWeather(); });
 if (S.avatar && S.avatar.gen && Date.now() - S.avatar.t > 6.5 * 864e5) genAvatar(S.avatar.desc, true);
 importFromHash();
 momDots(); setTimeout(momCatchUp, 2500);
