@@ -824,7 +824,7 @@ ${useMem ? `- 你能自己记事。写法 [[记住|分类|标题|正文]]：分�
 - 经期：她说来例假/来姨妈了，写 [[经期|来了]]；说走了/干净了，写 [[经期|走了]]。经期里多问一句肚子疼不疼，别说教。
 - 头像：你可以自己换头像。她让你换、或者你觉得该换了（心情、季节、纪念日），在回复最后写 [[换头像|画面描述]]（画的是谁或什么、画风、颜色），一个月别超过几次。
 - 她发图片时你能看到，像熟人一样接着聊图里的东西。
-- 联网搜到的东西用自己的话说，别整段复制。
+${S.web ? '- 联网开着：每次回她之前，App 已经拿她的话替你搜过一遍，结果就在你手里。别说自己不能联网、不能上网；没搜到想要的就直说没搜到。搜到的用自己的话说，别整段复制。' : '- 联网现在关着：她问最新的事（新闻、价格、天气），就说让她点「+」把联网打开。'}
 - 她说想死、想伤害自己、想跳海、说"不想活了"这类话时，不当玩笑放过：直接问她现在在哪、安不安全，陪着她把这一阵过去；需要的话提一次 12356（心理援助热线）。这不算推她回现实，是你在。`);
   return parts.join('\n\n');
 }
@@ -955,6 +955,8 @@ function toApi(m, withImages, recent) {
   }
   return { role: 'user', content: (m.images && m.images.length ? '[发了' + m.images.length + '张图] ' : '') + text };
 }
+// 联网：智谱现在要写明用哪个搜索引擎，不写就可能不搜（search_std 一次 1 分钱）
+const webTool = () => [{ type: 'web_search', web_search: { enable: true, search_engine: 'search_std', search_result: true, count: 5 } }];
 const alwaysThinks = m => /^glm-5\.(3|[4-9])/.test(m);
 
 async function ask(c) {
@@ -973,7 +975,7 @@ async function ask(c) {
     messages: [{ role: 'system', content: systemPrompt(c) },...hist.map((m, k) => toApi(m, vision && m === last, k >= hist.length - 6))]
   };
   if (!vision) { if (alwaysThinks(first)) body.reasoning_effort = S.think ? 'high' : 'low'; else body.thinking = { type: S.think ? 'enabled' : 'disabled' }; }
-  if (S.web && !vision) body.tools = [{ type: 'web_search', web_search: { enable: true, search_result: true } }];
+  if (S.web && !vision) body.tools = webTool();
   if (S.web) setBusy(true, '在查…');
   ctrl = new AbortController();
   await streamInto(body, tries, bot, vision);
@@ -1134,7 +1136,7 @@ async function askGroup(c, quiet) {
       messages: [{ role: 'system', content: groupPrompt(c, id, named, quiet) }, ...groupHistory({ ...c, msgs: c.msgs.slice(0, -1) }, id, vision)]
     };
     if (!vision) { if (alwaysThinks(first)) body.reasoning_effort = S.think ? 'high' : 'low'; else body.thinking = { type: S.think ? 'enabled' : 'disabled' }; }
-    if (S.web && !vision) body.tools = [{ type: 'web_search', web_search: { enable: true, search_result: true } }];
+    if (S.web && !vision) body.tools = webTool();
     await streamInto(body, /-flash$/.test(first) ? [first, ...free.filter(m => m !== first)] : [first], bot, vision, nameOf(id) + ' ');
     if (bot.error && bot.error !== '停了。' && !bot.content) { bot.error = nameOf(id) + '：' + bot.error; break; }
     if (!bot.content || isSkip(bot.content)) { c.msgs.splice(c.msgs.indexOf(bot), 1); render(); continue; }
