@@ -1325,7 +1325,7 @@ function friendlyError(status, body) {
   const msg = (body && body.error && body.error.message) || '';
   if (code === '1309' || /套餐已到期/.test(msg)) return '这个 Key 绑的智谱套餐到期了（连免费模型也用不了）。去 open.bigmodel.cn 新建一个普通 API Key，或者续订套餐。';
   if (status === 401 || code === '1000' || code === '1001' || code === '1002') return 'Key 不对或者过期了，去设置里换一个。';
-  if (code === '1113' || /余额|欠费|balance/i.test(msg)) return '这个模型要钱，账户里没余额了。设置里换回免费的。';
+  if (code === '1113' || /余额|欠费|balance/i.test(msg)) return `智谱说这个模型扣不了钱（${code || status}${msg ? '：' + msg : ''}）。余额要是还有，多半是送的资源包用完了，去 open.bigmodel.cn 看「资源包」和实名认证。`;
   if (code === '1211' || /模型不存在|model/i.test(msg) && status === 400) return '这个模型名智谱不认，去设置里换一个试试。';
   if (code === '1302' || code === '1303' || code === '1305') return '智谱那边限流了，等一分钟再发。';
   if (code === '1301' || /敏感|安全|sensitive/i.test(msg)) return '这句被智谱的审核拦了，换个说法。';
@@ -1454,6 +1454,8 @@ function recallSearch(q, id, cur, days) {
 }
 
 const alwaysThinks = m => /^glm-5\.(3|[4-9])/.test(m);
+// 免费的挤不进去换下一个免费的；v30：付费模型报没钱（11/5 晚 glm-5.3 突然 1113，余额明明 19.97）就退到 4.5-air / 4.5v 先接着聊
+const modelTries = (first, free, vision) => /-flash$/.test(first) ? [first, ...free.filter(m => m !== first)] : [first, ...(vision ? ['glm-4.5v'] : ['glm-4.5-air']).filter(m => m !== first)];
 
 async function ask(c) {
   const bot = { role: 'assistant', content: '', t: Date.now() };
@@ -1465,7 +1467,7 @@ async function ask(c) {
   // 免费模型挤不进去（1305）就按顺序换下一个免费的
   const first = vision ? (S.vmodel.trim() || 'glm-4v-flash') : S.model;
   const free = vision ? ['glm-4v-flash', 'glm-4.1v-thinking-flash', 'glm-4.5v'] : ['glm-4.7-flash', 'glm-4.5-flash', 'glm-4-flash', 'glm-4.5-air'];
-  const tries = /-flash$/.test(first) ? [first, ...free.filter(m => m !== first)] : [first];
+  const tries = modelTries(first, free, vision);
   const body = {
     model: first, stream: true, temperature: 0.9,
     messages: [{ role: 'system', content: systemPrompt(c) },...hist.map((m, k) => toApi(m, vision && m === last, k >= hist.length - 6))]
@@ -1500,6 +1502,8 @@ async function streamInto(body, tries, bot, vision, who = '', ctx = null) {
       let res;
       for (let n = 0; ; n++) {
         body.model = tries[n];
+        // 换到不是一直思考的模型，思考参数跟着换
+        if (!vision && n && body.reasoning_effort && !alwaysThinks(body.model)) { body.thinking = { type: body.reasoning_effort === 'high' ? 'enabled' : 'disabled' }; delete body.reasoning_effort; }
         res = await fetch(API, {
           method: 'POST', signal: ctrl.signal,
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + S.key.trim() },
@@ -1701,7 +1705,7 @@ async function askGroup(c, quiet) {
     };
     if (!vision) { if (alwaysThinks(first)) body.reasoning_effort = S.think ? 'high' : 'low'; else body.thinking = { type: S.think ? 'enabled' : 'disabled' }; }
     if (!vision) { const tl = toolsFor(c); if (tl.length) body.tools = tl; }
-    await streamInto(body, /-flash$/.test(first) ? [first, ...free.filter(m => m !== first)] : [first], bot, vision, nameOf(id) + ' ', { c, id });
+    await streamInto(body, modelTries(first, free, vision), bot, vision, nameOf(id) + ' ', { c, id });
     if (bot.error && bot.error !== '停了。' && !bot.content) { bot.error = nameOf(id) + '：' + bot.error; break; }
     if (!bot.content || isSkip(bot.content)) { c.msgs.splice(c.msgs.indexOf(bot), 1); render(); continue; }
     bot.content = cleanGroup(bot.content, c, id);
@@ -2692,7 +2696,7 @@ function tryPlay(src) {
 // v28：她手机上 Apple 连不上、智谱也搜不到网易云的歌。改走 QQ 音乐：它的搜索认 JSONP（国内直连），
 // 找到歌就开 QQ 音乐自己的手机播放页（免费歌整首、VIP 歌它自己给试听）。真正在月亮里放的，是「一起听」里她加的手机里的歌
 let playQueue = [];
-const APPV = 'v29';
+const APPV = 'v30';
 const qqPlay = mid => 'https://i.y.qq.com/v8/playsong.html?songmid=' + mid;
 async function qqFind(q) {
   const j = await jsonp(`https://c.y.qq.com/soso/fcgi-bin/client_search_cp?w=${encodeURIComponent(q)}&format=jsonp&p=1&n=5&cr=1`, 7000, 'jsonpCallback');
